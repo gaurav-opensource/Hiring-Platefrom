@@ -1,5 +1,6 @@
 const express = require('express');
 const router = express.Router();
+const nodemailer = require("nodemailer");
 const Job = require('../model/job.model.js');
 const {
   applyToJob,
@@ -61,40 +62,95 @@ router.post("/:jobId/select-students", async (req, res) => {
 router.post("/:jobId/generate-links", async (req, res) => {
   try {
     const { jobId } = req.params;
+    const { email: hrEmail } = req.body; // HR email
 
-    // 1. Job ke sabhi applications lao
+    // 1️⃣ Job ke sabhi applications fetch karo
     const applications = await ApplicationProgress.find({ jobId });
 
     if (!applications || applications.length === 0) {
       return res.status(404).json({ message: "No applications found for this job" });
     }
 
+    // 2️⃣ Filter only students in "test" stage
+    const testStageApps = applications.filter(app => app.currentStage === "test");
+
+    if (testStageApps.length === 0) {
+      return res.status(404).json({ message: "No students are in the Test stage" });
+    }
+
+    // 3️⃣ Setup nodemailer
+    const transporter = nodemailer.createTransport({
+      service: "gmail",
+      auth: {
+        user: hrEmail, // HR email se send
+        pass: "your-email-password-or-app-password", // secure way use env variable
+      },
+    });
+
     let updatedApps = [];
 
-    // 2. Har student ke liye link aur token banao
-    for (let app of applications) {
-      const token = 'djfsdfsdjhfsvfsdfsd fsdbfsdvfdjh'
+    for (let app of testStageApps) {
+      // ⚡️ Secure token
+      const token = 'fdsjfndsdbvdvfbdbdbdjfbdffb';
       const testLink = `http://localhost:3000/students/${jobId}/${app.userId}?token=${token}`;
 
+      // 4️⃣ Update application
       app.testLink = testLink;
       app.testToken = token;
       await app.save();
 
+      // 5️⃣ Send email to student
+      await transporter.sendMail({
+        from: hrEmail,
+        to: app.email,
+        subject: `Coding Test Link for Job ${jobId}`,
+        html: `<p>Dear Candidate,</p>
+               <p>Your coding test for job <strong>${jobId}</strong> is ready.</p>
+               <p>Click here to start: <a href="${testLink}">${testLink}</a></p>
+               <p>Best Regards,<br/>HR Team</p>`,
+      });
+
       updatedApps.push({
         userId: app.userId,
         testLink,
-        token
+        token,
+        email: app.email,
       });
     }
 
-    // 3. Response bhejo
     res.status(200).json({
-      message: "Test links generated successfully",
+      message: "Test links generated and emailed successfully for students in Test stage",
       links: updatedApps,
     });
   } catch (err) {
     console.error("Error in generate-links:", err);
     res.status(500).json({ error: err.message });
+  }
+});
+
+
+
+router.post("/:jobId/batch-update-stage", async (req, res) => {
+    try {
+    const { jobId } = req.params;
+    const { studentIds, stage } = req.body;
+    console.log("My Name is gaurav yadav")
+
+    if (!studentIds || !stage || !Array.isArray(studentIds)) {
+      return res.status(400).json({ message: "studentIds array and stage required" });
+    }
+
+    const result = await ApplicationProgress.updateMany(
+      { jobId, _id: { $in: studentIds } },
+      { currentStage: stage }
+    );
+
+    res.json({
+      message: `${result.modifiedCount} applicants updated to stage ${stage}`,
+    });
+  } catch (err) {
+    console.error("Error in batch updating applicants:", err);
+    res.status(500).json({ message: "Server error" });
   }
 });
 
