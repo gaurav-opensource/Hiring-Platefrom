@@ -9,6 +9,7 @@
     "joi": "^17.13.3",
     "jsonwebtoken": "^9.0.2",
     "mongoose": "^8.16.4",
-    "nodemailer": "^7.0.5"
+    "nodemailer": "^7.0.5",
+    "p-queue": "^8.1.0"
   }
 }

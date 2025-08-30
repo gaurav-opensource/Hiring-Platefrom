@@ -2,6 +2,9 @@ const express = require('express');
 const router = express.Router();
 const nodemailer = require("nodemailer");
 const Job = require('../model/job.model.js');
+const TestCodeSave = require("../model/TestCase.model.js");
+const Submission = require("../model/submission.model.js");
+
 const {
   applyToJob,
   fetchAllJob,
@@ -13,6 +16,7 @@ const {
 //   shortlistAfterTest,
   getStudentsByJobId,
   getJobsByHRId,
+  evaluateJob
  
 } = require('../controller/jobController');
 const ApplicationProgress = require('../model/applicationProgress.model.js');
@@ -35,6 +39,7 @@ router.get('/alljob', fetchAllJob);
 router.get('/getjobs',authenticate,getJobsByHRId );
 router.get("/students/:jobId", getStudentsByJobId);
 router.post("/:jobId/resume-screen",calculateResumeScore);
+router.post("/:jobId/evaluate", evaluateJob);
 
 // routes/jobRoutes.js
 router.post("/:jobId/select-students", async (req, res) => {
@@ -174,6 +179,78 @@ router.post("/:jobId/step/:stepIndex", async (req, res) => {
   }
 });
 
+// POST /api/test/save
+router.post("/save", async (req, res) => {
+  try {
+    const { userId, jobId, questionId, code, language } = req.body;
+
+    let submission = await TestCodeSave.findOne({ userId, jobId });
+
+    if (!submission) {
+      // Agar entry pehli baar ban rahi hai
+      submission = new TestCodeSave({
+        userId,
+        jobId,
+        submissions: [{ questionId, code, language }],
+      });
+    } else {
+      // Yaha error aa raha hai
+      if (!submission.submissions) {
+        submission.submissions = []; // ✅ fix: ensure array exists
+      }
+
+      const existingIndex = submission.submissions.findIndex(
+        (s) => s.questionId.toString() === questionId.toString()
+      );
+
+      if (existingIndex > -1) {
+        // Update existing
+        submission.submissions[existingIndex].code = code;
+        submission.submissions[existingIndex].language = language;
+      } else {
+        // Push new
+        submission.submissions.push({ questionId, code, language });
+      }
+    }
+
+    await submission.save();
+    res.json({ success: true, message: "Code saved successfully" });
+  } catch (error) {
+    console.error("Error while saving test code:", error);
+    res.status(500).json({ success: false, message: "Internal Server Error" });
+  }
+});
+
+// POST /api/test/submit
+router.post("/submit", async (req, res) => {
+  try {
+  const { userId, jobId } = req.body;
+  console.log(jobId)
+  const test = await TestCodeSave.findOne({ userId, jobId });
+
+if (!test) return res.status(400).json({ error: "No saved answers" });
+
+await Submission.create({
+  userId,
+  jobId,
+  submissions: test.submissions.map(q => ({
+    questionId: q.questionId,
+    code: q.code,
+    language: q.language,
+  })),
+});
+
+// Optional: delete temp save
+await TestCodeSave.deleteOne({ _id: test._id });
+
+res.json({ success: true, message: "Final test submitted!" });
+
+} catch (err) {
+  console.error("Error while submitting test:", err);
+  res.status(500).json({ error: err.message });
+}
+
+});
 
 
 

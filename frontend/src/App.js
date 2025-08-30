@@ -72,7 +72,7 @@ function App() {
        
         {/* Unique route} */}
         <Route path="/jobs" element={<PostJobs />} />
-        <Route path="/students/:jobId/:studentId" element={<TextCodeEditorPage />} />
+        <Route path="/students/:jobId/:userId" element={<TextCodeEditorPage />} />
 
       </Route>
     </Routes>

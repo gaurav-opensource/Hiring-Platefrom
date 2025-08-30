@@ -11,15 +11,46 @@ const JUDGE0_HOST = "judge0-ce.p.rapidapi.com";
 
 // Language options
 const languages = [
-  { name: "JavaScript", id: 63, editorLanguage: "javascript", starterCode: "// JavaScript\nfunction solve(input) {\n  // Write your code here\n}" },
-  { name: "Python 3", id: 71, editorLanguage: "python", starterCode: "# Python 3\n# Write your code here\n" },
-  { name: "Java", id: 62, editorLanguage: "java", starterCode: "public class Main {\n  public static void main(String[] args) {\n    // Write your code here\n  }\n}" },
-  { name: "C++", id: 54, editorLanguage: "cpp", starterCode: "#include <iostream>\nusing namespace std;\nint main() {\n  // Write your code here\n  return 0;\n}" },
-  { name: "C", id: 50, editorLanguage: "c", starterCode: "#include <stdio.h>\nint main() {\n  // Write your code here\n  return 0;\n}" },
+  {
+    name: "JavaScript",
+    id: 63,
+    editorLanguage: "javascript",
+    starterCode:
+      "// JavaScript\nfunction solve(input) {\n  // Write your code here\n}",
+  },
+  {
+    name: "Python 3",
+    id: 71,
+    editorLanguage: "python",
+    starterCode: "# Python 3\n# Write your code here\n",
+  },
+  {
+    name: "Java",
+    id: 62,
+    editorLanguage: "java",
+    starterCode:
+      "public class Main {\n  public static void main(String[] args) {\n    // Write your code here\n  }\n}",
+  },
+  {
+    name: "C++",
+    id: 54,
+    editorLanguage: "cpp",
+    starterCode:
+      "#include <iostream>\nusing namespace std;\nint main() {\n  // Write your code here\n  return 0;\n}",
+  },
+  {
+    name: "C",
+    id: 50,
+    editorLanguage: "c",
+    starterCode:
+      "#include <stdio.h>\nint main() {\n  // Write your code here\n  return 0;\n}",
+  },
 ];
 
 const TextCodeEditorPage = () => {
   const { jobId, userId } = useParams();
+  console.log(userId)
+
 
   const [questions, setQuestions] = useState([]);
   const [answers, setAnswers] = useState({});
@@ -30,16 +61,13 @@ const TextCodeEditorPage = () => {
   const [testResults, setTestResults] = useState(null);
   const [isExecuting, setIsExecuting] = useState(false);
 
-  // ✅ Fetch multiple questions by jobId
+  // ✅ Fetch questions
   useEffect(() => {
     const fetchQuestions = async () => {
       try {
         const res = await axios.get(`${API}/questions/${jobId}`);
-        // Ensure every question has testCases (avoid undefined.map)
         const data = Array.isArray(res.data) ? res.data : [res.data];
-        setQuestions(
-          data.map((q) => ({ ...q, testCases: q.testCases || [] }))
-        );
+        setQuestions(data.map((q) => ({ ...q, testCases: q.testCases || [] })));
       } catch (err) {
         console.error("Error fetching questions:", err);
       } finally {
@@ -49,7 +77,7 @@ const TextCodeEditorPage = () => {
     fetchQuestions();
   }, [jobId]);
 
-  // ✅ Set starter code for the current question
+  // ✅ Set starter code for currentQ if not answered yet
   useEffect(() => {
     if (questions.length > 0) {
       const currentQId = questions[currentIndex]._id;
@@ -101,7 +129,11 @@ const TextCodeEditorPage = () => {
 
         const resData = response.data;
         const status = resData.status.description;
-        const actual = resData.stdout?.trim() || resData.stderr || resData.compile_output || "";
+        const actual =
+          resData.stdout?.trim() ||
+          resData.stderr ||
+          resData.compile_output ||
+          "";
         const expected = (testCase.output || "").trim();
 
         results.push({
@@ -130,21 +162,31 @@ const TextCodeEditorPage = () => {
     }
   };
 
-  // ✅ Submit Final Answers
-  const handleSubmit = async () => {
+  // ✅ Save code per question
+  const handleSave = async (qId) => {
     try {
-      await axios.post(`${API}/submissions`, {
+      await axios.post(`${API}/job/save`, {
         userId,
         jobId,
-        submissions: Object.keys(answers).map((qId) => ({
-          questionId: qId,
-          code: answers[qId],
-          language: selectedLanguage.name,
-        })),
+        questionId: qId,
+        code: answers[qId],
+        language: selectedLanguage.name,
       });
+    } catch (err) {
+      console.error("Error saving code:", err);
+    }
+  };
+
+  // ✅ Final Submit
+  const handleSubmit = async () => {
+    try {
+      const currentQ = questions[currentIndex];
+      await handleSave(currentQ._id); // save last Q also
+      await axios.post(`${API}/job/submit`, { userId, jobId });
       alert("✅ Test submitted successfully!");
     } catch (err) {
       console.error("Error submitting test:", err);
+      alert("❌ Error submitting test");
     }
   };
 
@@ -170,8 +212,12 @@ const TextCodeEditorPage = () => {
                 key={idx}
                 className="bg-gray-100 p-2 rounded mb-2 text-sm font-mono"
               >
-                <p><strong>Input:</strong> {tc.input}</p>
-                <p><strong>Output:</strong> {tc.output}</p>
+                <p>
+                  <strong>Input:</strong> {tc.input}
+                </p>
+                <p>
+                  <strong>Output:</strong> {tc.output}
+                </p>
               </div>
             ))}
           </div>
@@ -240,7 +286,9 @@ const TextCodeEditorPage = () => {
                 >
                   <p className="font-mono text-sm">
                     Test Case {index + 1}:{" "}
-                    {result.passed ? "✅ Passed" : `❌ Failed (${result.status})`}
+                    {result.passed
+                      ? "✅ Passed"
+                      : `❌ Failed (${result.status})`}
                   </p>
                   <p className="text-xs text-gray-700">
                     Time: {result.time}s, Memory: {result.memory} KB
@@ -291,7 +339,9 @@ const TextCodeEditorPage = () => {
 
             {currentIndex < questions.length - 1 ? (
               <button
-                onClick={() => {
+                onClick={async () => {
+                  const currentQ = questions[currentIndex];
+                  await handleSave(currentQ._id); // 🔹 save before next
                   setCurrentIndex((prev) => prev + 1);
                   setTestResults(null);
                 }}

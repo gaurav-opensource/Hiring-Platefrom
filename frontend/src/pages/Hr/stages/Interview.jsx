@@ -7,8 +7,9 @@ const Interview = ({ job, onStageUpdate }) => {
   const [applicants, setApplicants] = useState([]);
   const [loading, setLoading] = useState(false);
   const [processing, setProcessing] = useState(false);
+  const [evaluating, setEvaluating] = useState(false);
 
-  // ✅ Fetch all students who completed test stage
+  // ✅ Fetch all students who completed test
   useEffect(() => {
     if (!job) return;
 
@@ -20,13 +21,13 @@ const Interview = ({ job, onStageUpdate }) => {
           headers: { Authorization: `Bearer ${token}` },
         });
 
-        // Only students who completed test stage
+        // ✅ Only students with testCompleted = true
         const testCompleted = (res.data || []).filter(
-          (a) => a.currentStage === "testCompleted"
+          (a) => a.testCompleted === true
         );
 
-        // Sort by testScore descending
-        testCompleted.sort((a, b) => b.testScore - a.testScore);
+        // ✅ Sort by score descending
+        testCompleted.sort((a, b) => b.score - a.score);
 
         setApplicants(testCompleted);
       } catch (err) {
@@ -48,7 +49,7 @@ const Interview = ({ job, onStageUpdate }) => {
       setProcessing(true);
       const token = localStorage.getItem("token");
 
-      // Example: select top 1 student, can modify to select more
+      // Example: select top 1 student
       const topStudent = applicants[0];
 
       await axios.post(
@@ -58,7 +59,9 @@ const Interview = ({ job, onStageUpdate }) => {
       );
 
       // Update frontend list
-      setApplicants((prev) => prev.filter((a) => a.userId._id !== topStudent.userId._id));
+      setApplicants((prev) =>
+        prev.filter((a) => a.userId._id !== topStudent.userId._id)
+      );
 
       if (onStageUpdate)
         onStageUpdate({ ...job, currentStep: 5 }); // optional update for HRDashboard
@@ -72,41 +75,72 @@ const Interview = ({ job, onStageUpdate }) => {
     }
   };
 
+  // ✅ Trigger evaluation API
+  const handleEvaluateTests = async () => {
+    if (!job) return;
+
+    try {
+      setEvaluating(true);
+      const token = localStorage.getItem("token");
+
+      await axios.post(`${BASE_URL}/job/${job._id}/evaluate`, null, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      alert("✅ Test evaluation completed for all students!");
+    } catch (err) {
+      console.error("Error evaluating tests:", err);
+      alert("Failed to evaluate tests");
+    } finally {
+      setEvaluating(false);
+    }
+  };
+
   return (
     <div>
       <h3 className="text-xl font-bold mb-4">Interview Stage</h3>
+
+      <div className="mb-4 flex gap-3">
+        {/* ✅ Evaluate Button */}
+        <button
+          onClick={handleEvaluateTests}
+          disabled={evaluating}
+          className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:bg-gray-400"
+        >
+          {evaluating ? "Evaluating..." : "Run Test Evaluation"}
+        </button>
+
+        {/* ✅ Promote Top Student Button */}
+        <button
+          onClick={handleSelectTopForInterview}
+          disabled={processing}
+          className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 disabled:bg-gray-400"
+        >
+          {processing ? "Processing..." : "Select Top for Interview"}
+        </button>
+      </div>
 
       {loading ? (
         <p>⏳ Loading applicants...</p>
       ) : applicants.length === 0 ? (
         <p>No applicants ready for interview.</p>
       ) : (
-        <>
-          <ul className="space-y-3 mb-4">
-            {applicants.map((student) => (
-              <li
-                key={student.userId._id}
-                className="p-3 border rounded bg-gray-50 flex justify-between items-center"
-              >
-                <div>
-                  <p className="font-medium">{student.userId.name}</p>
-                  <p className="text-sm text-gray-600">{student.userId.email}</p>
-                  <p className="text-sm text-gray-700">
-                    Test Score: {student.testScore}
-                  </p>
-                </div>
-              </li>
-            ))}
-          </ul>
-
-          <button
-            onClick={handleSelectTopForInterview}
-            disabled={processing}
-            className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 disabled:bg-gray-400"
-          >
-            {processing ? "Processing..." : "Select Top for Interview"}
-          </button>
-        </>
+        <ul className="space-y-3 mb-4">
+          {applicants.map((student) => (
+            <li
+              key={student.userId._id}
+              className="p-3 border rounded bg-gray-50 flex justify-between items-center"
+            >
+              <div>
+                <p className="font-medium">{student.userId.name}</p>
+                <p className="text-sm text-gray-600">{student.userId.email}</p>
+                <p className="text-sm text-gray-700">
+                  Test Score: {student.score}
+                </p>
+              </div>
+            </li>
+          ))}
+        </ul>
       )}
     </div>
   );

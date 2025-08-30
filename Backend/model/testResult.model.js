@@ -1,17 +1,15 @@
 const mongoose = require("mongoose");
 
-const testAttemptSchema = new mongoose.Schema({
-  student: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
-  question: { type: mongoose.Schema.Types.ObjectId, ref: "Question" },
-  job: { type: mongoose.Schema.Types.ObjectId, ref: "Job" },
-  code: String,
-  language: String,
-  testCaseResults: [
-    { input: String, expectedOutput: String, actualOutput: String, passed: Boolean }
+const submissionSchema = new mongoose.Schema({
+  userId: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
+  jobId: { type: mongoose.Schema.Types.ObjectId, ref: "Job", required: true },
+  submissions: [
+    {
+      questionId: { type: mongoose.Schema.Types.ObjectId, ref: "Question", required: true },
+      code: String,
+      language: String,
+    },
   ],
-  totalTestCases: Number,
-  passedTestCases: Number,
-  submittedAt: { type: Date, default: Date.now }
-});
+}, { timestamps: true });
 
-module.exports = mongoose.model("TestAttempt", testAttemptSchema);
+module.exports = mongoose.model("Submission", submissionSchema);

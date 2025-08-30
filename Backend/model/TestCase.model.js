@@ -1,19 +1,15 @@
 const mongoose = require("mongoose");
 
-const testcaseResultSchema = new mongoose.Schema({
-  userId: { type: String, required: true },
+const testCodeSaveSchema = new mongoose.Schema({
+  userId: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
   jobId: { type: mongoose.Schema.Types.ObjectId, ref: "Job", required: true },
-  questionId: { type: mongoose.Schema.Types.ObjectId, ref: "Question", required: true },
-  results: [
+  submissions: [
     {
-      input: String,
-      expectedOutput: String,
-      actualOutput: String,
-      status: String // PASSED | FAILED
-    }
+      questionId: { type: mongoose.Schema.Types.ObjectId, ref: "Question" },
+      code: String,
+      language: String,
+    },
   ],
-  score: Number,
-  createdAt: { type: Date, default: Date.now }
 });
 
-module.exports = mongoose.model("TestcaseResult", testcaseResultSchema);
+module.exports = mongoose.model("TestCodeSave", testCodeSaveSchema);

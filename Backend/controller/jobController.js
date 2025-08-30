@@ -2,6 +2,9 @@ const ApplicationProgress = require('../model/applicationProgress.model.js');
 const Job = require('../model/job.model.js');
 const User = require('../model/user.model.js');
 const JobPipeline = require('../model/currentstep.model.js');
+const Submission = require("../model/submission.model.js");
+const Question = require("../model/question.model.js");
+const PQueue = require("p-queue").default;
 // const resumeQueue = require("./resumeQueue.js");
 // const nodemailer = require("nodemailer");
 // const Question = require("../model/question.model.js");
@@ -341,10 +344,118 @@ const updatePipelineStep = async(req,res) =>{
     res.status(500).json({ error: err.message });
   }
 }
+
+
+// controllers/evaluateController.js
+
+
+
+const LANGUAGE_MAP = {
+  javascript: 63,
+  python: 71,
+  java: 62,
+  "c++": 54,
+  c: 50,
+};
+const JUDGE0_URL = "https://judge0-ce.p.rapidapi.com";
+const JUDGE0_KEY = "1b7e563300msh3a6a8fa89c5812bp17fcd1jsn302890a8dc8a";
+const JUDGE0_HOST = "judge0-ce.p.rapidapi.com";
+const evaluateJob = async (req, res) => {
+  const { jobId } = req.params;
+
+  try {
+    // ✅ Step 1: Find all submissions for this job
+    const submissions = await Submission.find({ jobId }).populate("userId");
+    console.log(`Found ${submissions.length} submissions for job ${jobId}`);
+
+    if (!submissions.length) {
+      return res
+        .status(404)
+        .json({ message: "No submissions found for this job" });
+    }
+
+    // ✅ Create queue (to avoid Judge0 429 errors)
+    const queue = new PQueue({ concurrency: 2, interval: 1000, intervalCap: 2 });
+
+    // ✅ Step 2: Process each student's submissions
+    for (let submission of submissions) {
+      const { userId, submissions: answers } = submission;
+
+      let totalTestCases = 0;
+      let correctTestCases = 0;
+
+      for (let ans of answers) {
+        const { questionId, code, language } = ans;
+
+        const question = await Question.findById(questionId);
+        if (!question || !question.testCases) continue;
+
+        for (let test of question.testCases) {
+          totalTestCases++;
+
+          // ✅ Add Judge0 execution to queue
+          queue.add(async () => {
+            try {
+              const response = await axios.post(
+                `${JUDGE0_URL}/submissions?base64_encoded=false&wait=true`,
+                {
+                  source_code: code,
+                  language_id: 71,
+                  stdin: test.input,
+                },
+                {
+                  headers: {
+                    "Content-Type": "application/json",
+                    "X-RapidAPI-Key": JUDGE0_KEY,
+                    "X-RapidAPI-Host": JUDGE0_HOST,
+                  },
+                }
+              );
+
+              const output = response.data.stdout?.trim();
+              if (output === test.output.trim()) {
+                correctTestCases++;
+              }
+            } catch (err) {
+              console.error("Judge0 error:", err.message);
+            }
+          });
+        }
+      }
+
+      // ✅ Save results after queue finishes all tasks for this student
+      queue.add(async () => {
+        const scorePercent = totalTestCases
+          ? Math.round((correctTestCases / totalTestCases) * 100)
+          : 0;
+
+        await ApplicationProgress.findOneAndUpdate(
+          { userId, jobId },
+          {
+            score: scorePercent,
+            correct: correctTestCases,
+            total: totalTestCases,
+          },
+          { upsert: true, new: true }
+        );
+      });
+    }
+
+    // ✅ Wait for all Judge0 + DB tasks
+    await queue.onIdle();
+
+    res.json({ message: "Evaluation completed successfully ✅" });
+  } catch (error) {
+    console.error("Server error in evaluateJob:", error);
+    res.status(500).json({ message: "Server Error", error: error.message });
+  }
+};
+
 // ================== Export All ================== //
 module.exports = {
   applyToJob,
   // calculateResumeScore,
+  evaluateJob,
   getJobsByHRId,
   fetchAllJob,
   getAppliedJobs,

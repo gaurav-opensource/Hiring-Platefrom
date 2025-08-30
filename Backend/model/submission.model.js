@@ -1,26 +1,15 @@
-const mongoose = require('mongoose');
-const Schema = mongoose.Schema;
+const mongoose = require("mongoose");
 
-const AnswerSchema = new Schema({
-  questionId: Schema.Types.ObjectId,
-  type: String,
-  answerText: Schema.Types.Mixed,
-  code: String,
-  language: String,
-  codeHash: String,
-  judged: { type: Boolean, default: false },
-  passed: Number,
-  totalTestCases: Number,
-  score: Number
-}, {_id: false});
+const submissionSchema = new mongoose.Schema({
+  userId: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
+  jobId: { type: mongoose.Schema.Types.ObjectId, ref: "Job", required: true },
+  submissions: [
+    {
+      questionId: { type: mongoose.Schema.Types.ObjectId, ref: "Question", required: true },
+      code: String,
+      language: String,
+    },
+  ],
+}, { timestamps: true });
 
-const SubmissionSchema = new Schema({
-  userId: { type: Schema.Types.ObjectId, ref: 'User' },
-  sessionId: { type: Schema.Types.ObjectId, ref: 'TestSession' },
-  answers: [AnswerSchema],
-  totalScore: Number,
-  flagged: { type: Boolean, default: false },
-  createdAt: { type: Date, default: Date.now }
-});
-
-module.exports = mongoose.model('Submission', SubmissionSchema);
+module.exports = mongoose.model("Submission", submissionSchema);
