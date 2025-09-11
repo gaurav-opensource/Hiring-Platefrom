@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import axios from "axios";
 
 // Stage Components
@@ -8,7 +8,7 @@ import CodingTest from "./stages/CodingTest";
 import TestEvaluation from "./stages/TestEvaluation";
 import Interview from "./stages/Interview";
 
-const BASE_URL = "http://localhost:5000/api"; // backend URL
+import BASE_URL from "../../apiConfig";
 
 const stages = [
   { key: "resume", label: "Resume Screening", component: ResumeScreening },
@@ -22,9 +22,8 @@ const HRDashboard = () => {
   const [hrData, setHrData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedJob, setSelectedJob] = useState(null);
-  const [currentStage, setCurrentStage] = useState(0);
 
-  // ✅ Fetch jobs from backend
+  // Fetch jobs
   useEffect(() => {
     const fetchHrJobs = async () => {
       try {
@@ -43,15 +42,73 @@ const HRDashboard = () => {
     fetchHrJobs();
   }, []);
 
+  // When a job is selected
+  const handleJobSelect = (job) => {
+    setSelectedJob(job);
+  };
+
+  // Render only the current stage component based on job.stage
   const renderStageComponent = () => {
-    const StageComponent = stages[currentStage].component;
+    if (!selectedJob) return null;
+    const stageObj = stages.find((s) => s.key === selectedJob.stage);
+    if (!stageObj) return <p>Unknown stage.</p>;
+    const StageComponent = stageObj.component;
     return <StageComponent job={selectedJob} />;
   };
+
+  
+  const renderStageTracker = () => {
+  if (!selectedJob) return null;
+  const currentIndex = stages.findIndex((s) => s.key === selectedJob.stage);
+
+  return (
+    <div className="flex mb-6 justify-center items-center">
+      {stages.map((stage, index) => {
+        let status = "pending";
+        if (index < currentIndex) status = "completed";
+        else if (index === currentIndex) status = "current";
+
+        return (
+          <div key={stage.key} className="flex flex-col items-center flex-1">
+            {/* Circle */}
+            <div
+              className={`w-8 h-8 rounded-full flex justify-center items-center ${
+                status === "completed"
+                  ? "bg-green-500 text-white"
+                  : status === "current"
+                  ? "bg-blue-500 text-white"
+                  : "bg-gray-300 text-gray-600"
+              }`}
+            >
+              {index + 1}
+            </div>
+
+            {/* Label */}
+            <div className="text-xs mt-2 text-center">
+              {stage.label}
+            </div>
+
+            {/* Line */}
+            {index < stages.length - 1 && (
+              <div className="absolute w-full h-1 bg-gray-300 top-4 left-1/2 z-0">
+                <div
+                  className={`h-1 ${
+                    index < currentIndex ? "bg-green-500" : "bg-gray-300"
+                  }`}
+                ></div>
+              </div>
+            )}
+          </div>
+        );
+      })}
+    </div>
+  );
+};
 
   if (loading) return <p className="text-center mt-10">⏳ Loading jobs...</p>;
 
   return (
-    <div className="flex h-screen">
+    <div className="flex h-screen pt-20">
       {/* Sidebar */}
       <div className="w-1/4 bg-gray-100 p-4 border-r overflow-y-auto">
         <h2 className="text-xl font-bold mb-4">Jobs</h2>
@@ -61,10 +118,7 @@ const HRDashboard = () => {
           hrData.map((job) => (
             <div
               key={job._id}
-              onClick={() => {
-                setSelectedJob(job);
-                setCurrentStage(0);
-              }}
+              onClick={() => handleJobSelect(job)}
               className={`p-3 mb-2 rounded cursor-pointer ${
                 selectedJob?._id === job._id ? "bg-blue-200" : "bg-white"
               }`}
@@ -80,25 +134,11 @@ const HRDashboard = () => {
         {selectedJob ? (
           <>
             <h2 className="text-2xl font-bold mb-4">
-              {selectedJob.title} – Hiring Workflow
+              {selectedJob.title} – {selectedJob.stage.toUpperCase()}
             </h2>
 
             {/* Stage Tracker */}
-            <div className="flex mb-6">
-              {stages.map((stage, index) => (
-                <div
-                  key={stage.key}
-                  className={`flex-1 text-center py-2 px-3 border rounded mx-1 cursor-pointer ${
-                    index === currentStage
-                      ? "bg-blue-500 text-white"
-                      : "bg-gray-200"
-                  }`}
-                  onClick={() => setCurrentStage(index)}
-                >
-                  {stage.label}
-                </div>
-              ))}
-            </div>
+            {renderStageTracker()}
 
             {/* Stage Work Area */}
             <div className="border rounded p-6 bg-gray-50">
@@ -106,7 +146,7 @@ const HRDashboard = () => {
             </div>
           </>
         ) : (
-          <p className="text-gray-500">⬅️ Select a job to start.</p>
+          <p className="text-gray-500">⬅️ Select a job to view its stage.</p>
         )}
       </div>
     </div>

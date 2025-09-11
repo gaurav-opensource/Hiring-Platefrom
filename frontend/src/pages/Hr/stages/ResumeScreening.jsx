@@ -8,7 +8,7 @@ const ResumeScreening = ({ job, currentStageIndex = 0, onStageUpdate }) => {
   const [loadingApplicants, setLoadingApplicants] = useState(false);
   const [processing, setProcessing] = useState(false);
 
-  // ✅ Fetch applicants
+ 
   useEffect(() => {
     if (!job) return;
 
@@ -31,28 +31,27 @@ const ResumeScreening = ({ job, currentStageIndex = 0, onStageUpdate }) => {
     fetchApplicants();
   }, [job]);
 
-  // ✅ Handle "Process Resumes" click
+
   const handleProcessResumes = async () => {
     if (!job) return;
     setProcessing(true);
     try {
       const token = localStorage.getItem("token");
 
-      // 1️⃣ Trigger resume screening
       await axios.post(
         `${BASE_URL}/job/${job._id}/resume-screen`,
         {},
         { headers: { Authorization: `Bearer ${token}` } }
       );
 
-      // 2️⃣ Update current step in backend
+     
       const res = await axios.post(
         `${BASE_URL}/job/${job._id}/step/${currentStageIndex + 1}`,
         {},
         { headers: { Authorization: `Bearer ${token}` } }
       );
 
-      // Optional: parent component callback to update dashboard state
+      
       if (onStageUpdate && res.data.updatedJob) {
         onStageUpdate(res.data.updatedJob);
       }
@@ -81,7 +80,7 @@ const ResumeScreening = ({ job, currentStageIndex = 0, onStageUpdate }) => {
             {processing ? "Processing..." : "Process Resumes"}
           </button>
 
-          {/* Applicants List */}
+        
           <div className="mt-4">
             <h4 className="text-lg font-semibold mb-2">Applicants:</h4>
             {loadingApplicants ? (

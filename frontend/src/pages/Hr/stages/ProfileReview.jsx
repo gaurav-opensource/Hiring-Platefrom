@@ -9,7 +9,7 @@ const ProfileReview = ({ job, currentStageIndex = 1, onStageUpdate }) => {
   const [processing, setProcessing] = useState(false);
   const [selectedApplicants, setSelectedApplicants] = useState([]);
 
-  // Fetch applicants and sort by resumeScore
+ 
   useEffect(() => {
     if (!job) return;
 
@@ -36,7 +36,7 @@ const ProfileReview = ({ job, currentStageIndex = 1, onStageUpdate }) => {
     fetchApplicants();
   }, [job]);
 
-  // Toggle applicant selection
+
   const toggleSelectApplicant = (studentId) => {
     setSelectedApplicants((prev) =>
       prev.includes(studentId)
@@ -45,24 +45,24 @@ const ProfileReview = ({ job, currentStageIndex = 1, onStageUpdate }) => {
     );
   };
 
-  // Batch process selected students
+
   const handleProcessSelected = async () => {
     if (!job || selectedApplicants.length === 0) return;
     setProcessing(true);
     try {
       const token = localStorage.getItem("token");
 
-      // Backend call to update all selected students
+
       await axios.post(
         `${BASE_URL}/job/${job._id}/batch-update-stage`,
         {
           studentIds: selectedApplicants,
-          stage: "test", // update stage to test
+          stage: "test",
         },
         { headers: { Authorization: `Bearer ${token}` } }
       );
 
-      // Update frontend state
+      
       setApplicants((prev) =>
         prev.map((s) =>
           selectedApplicants.includes(s._id)
@@ -71,10 +71,10 @@ const ProfileReview = ({ job, currentStageIndex = 1, onStageUpdate }) => {
         )
       );
 
-      // Clear selected applicants
+      
       setSelectedApplicants([]);
 
-      // Optional: update job step
+     
       if (onStageUpdate) onStageUpdate({ ...job, currentStep: currentStageIndex + 1 });
 
       alert("Selected applicants moved to Test stage!");

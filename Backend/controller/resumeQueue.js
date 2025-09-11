@@ -2,7 +2,7 @@ const Queue = require("bull");
 const axios = require("axios");
 const ApplicationProgress = require("../model/applicationProgress.model.js");
 
-// Create a queue named "resumeQueue"
+
 const resumeQueue = new Queue("resumeQueue", {
   redis: {
     host: "127.0.0.1",
@@ -10,7 +10,7 @@ const resumeQueue = new Queue("resumeQueue", {
   }
 });
 
-// Worker to process each job in the queue
+
 resumeQueue.process(async (job) => {
   const { progressId, resumeLink, jobDescription } = job.data;
 
@@ -38,7 +38,7 @@ resumeQueue.process(async (job) => {
   }
 });
 
-// Optional: Event listeners for monitoring
+
 resumeQueue.on("completed", (job) => {
   console.log(`Job ${job.id} completed`);
 });

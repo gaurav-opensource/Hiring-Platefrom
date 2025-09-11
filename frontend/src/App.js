@@ -14,7 +14,7 @@ import LoginPage from "./pages/LoginPage";
 import SignupPage from "./pages/student/SignupPage";
 import TextCodeEditorPage from "./pages/student/TestCodeEditorPage";
 import StudentProfile from "./pages/student/StudentProfile";
-import ApplyPage from "./pages/student/ApplyPage";
+import ApplyForJob from "./pages/student/ApplyForJob";
 import StudentDashboard from "./pages/student/StudentDashboard";
 import TestPage from "./pages/student/TestCodeEditorPage";
 
@@ -26,11 +26,8 @@ import PostJobs from "./pages/student/PostJobs";
 import HrSignupPage from "./pages/Hr/HrSignupPage";
 import CreateJobs from "./pages/Hr/CreateJobs";
 import HRCreateQuestion from "./pages/Hr/HRCreateQuestion";
-import HRGenerateLink from "./pages/Hr/HRGenerateLink";
 import HRJobDashboardStepper from "./pages/Hr/Hrdashboard";
-import Loader from "./ui/Loader";
-import Button from "./ui/Button";
-import SelectStudentsPage from "./pages/Hr/SelectStudent";
+import StudentEditProfile from "./pages/student/EditProfilePage";
 
 
 
@@ -48,22 +45,19 @@ function App() {
         <Route path="/hr/signup" element={<HrSignupPage />} />
         <Route path="/student/signup" element={<SignupPage />} />
         <Route path="/login" element={<LoginPage />} />
-        <Route path="/loader" element={<Button/>} />
 
     
       <Route element={<PublicLayout />}>
         {/* student route  */}
         <Route path="/student/profile" element={<StudentProfile />} />
-        <Route path="/student/apply/:jobId" element={<ApplyPage />} />
+        <Route path="/student/apply/:jobId" element={<ApplyForJob/>} />
         <Route path="/student/dashboard" element={<StudentDashboard/>} />
-
+         <Route path="/edit-profile" element={<StudentEditProfile />} />
 
         {/* Hr route} */}
         <Route path="/hr/profile" element={<HrProfilePage />} />
-        <Route path="/hr/select" element={<SelectStudentsPage />} />
         <Route path="/hr/create" element={<CreateJobs />} />
         <Route path="/hr/createquestion" element={<HRCreateQuestion/>} />
-        <Route path="/hr/assign" element={<HRGenerateLink/>} />
         <Route path="/test/:jobId/:studentId/:token" element={<TestPage />} />
          <Route path="/hr/dashboard" element={<HRJobDashboardStepper/>} />
         <Route path="/" element={<div style={{padding:20}}>Open /hr/create or /hr/assign</div>} />

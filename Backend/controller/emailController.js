@@ -1,42 +1,49 @@
+const express = require("express");
+const router = express.Router();
+const Application = require("../models/Application");
+
 const nodemailer = require("nodemailer");
-require("dotenv").config();
 
-const sendSelectionEmail = async (req, res) => {
-  const { email, name, subject, message } = req.body;
+const transporter = nodemailer.createTransport({
+  service: "gmail",
+  auth: {
+    user: "gauravwithhost@gmail.com",
+    pass: "Gaurav@123",
+  },
+});
 
-  if (!email || !subject || !message) {
-    return res.status(400).json({ error: "All fields are required" });
-  }
-
+// API to send emails to all students for a job
+router.post("/send-emails", async (req, res) => {
   try {
-    // Create transporter
-    const transporter = nodemailer.createTransport({
-      service: "gmail",
-      auth: {
-        user: process.env.EMAIL_USER, // your email
-        pass: process.env.EMAIL_PASS, // app password
-      },
-    });
+    const { jobId, hrEmail } = req.body;
 
-    // Email content
-    const mailOptions = {
-      from: process.env.EMAIL_USER,
-      to: email,
-      subject: subject,
-      html: `
-        <h2>Congratulations ${name || "Student"}!</h2>
-        <p>${message}</p>
-      `,
-    };
+    const applications = await Application.find({ jobId });
 
-    // Send email
-    await transporter.sendMail(mailOptions);
-    res.status(200).json({ success: true, message: "Email sent successfully" });
+    if (!applications.length) {
+      return res.status(404).json({ message: "No applicants found for this job." });
+    }
+
+    // send emails to all students
+    for (const app of applications) {
+      const studentEmail = app.studentEmail;
+
+      const mailOptions = {
+        from: hrEmail,
+        to: studentEmail,
+        subject: "Job Application Update",
+        text: `You are selected for the job with ID: ${jobId}. Please contact HR at ${hrEmail}.`,
+      };
+
+      await transporter.sendMail(mailOptions);
+      console.log(`Email sent to ${studentEmail}`);
+    }
+
+    res.json({ message: "Emails sent to all students." });
 
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: "Failed to send email" });
+    console.error("Error sending emails:", error);
+    res.status(500).json({ message: "Server error." });
   }
-};
+});
 
-module.exports = { sendSelectionEmail };
+module.exports = router;

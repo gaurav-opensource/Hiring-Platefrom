@@ -2,6 +2,7 @@ import { useLocation, useParams, useNavigate } from "react-router-dom";
 import { useState } from "react";
 import axios from "axios";
 import BASE_URL from "../../apiConfig";
+import Loader from '../../ui/Loader'; // ✅ Import Loader component
 
 // ✅ Cloudinary Upload Helper (for PDF/Docs resumes)
 const uploadToCloudinary = async (file, type = "raw") => {
@@ -16,7 +17,6 @@ const uploadToCloudinary = async (file, type = "raw") => {
       ? "https://api.cloudinary.com/v1_1/dznnyaj0z/image/upload"
       : "https://api.cloudinary.com/v1_1/dznnyaj0z/raw/upload";
 
-  // 👇 IMPORTANT: for raw files (PDF/Docs), force resource_type
   const res = await axios.post(url, data, {
     headers: { "Content-Type": "multipart/form-data" },
   });
@@ -84,7 +84,7 @@ const ApplyPage = () => {
   };
 
   return (
-    <div className="max-w-3xl mx-auto p-6 mt-10 bg-white shadow rounded-xl">
+    <div className="max-w-3xl mx-auto p-6 mt-10 bg-white shadow rounded-xl pt-20">
       <h2 className="text-2xl font-bold mb-4">Apply for {job?.title}</h2>
 
       {/* Job Details */}
@@ -134,13 +134,20 @@ const ApplyPage = () => {
           />
         </div>
 
-        <button
-          type="submit"
-          disabled={loading}
-          className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded"
-        >
-          {loading ? "Submitting..." : "Submit Application"}
-        </button>
+        <div>
+          {loading ? (
+            <div className="flex justify-center">
+              <Loader /> {/* ✅ Show loader while submitting */}
+            </div>
+          ) : (
+            <button
+              type="submit"
+              className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded"
+            >
+              Submit Application
+            </button>
+          )}
+        </div>
       </form>
     </div>
   );

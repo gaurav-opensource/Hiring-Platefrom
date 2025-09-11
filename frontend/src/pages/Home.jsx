@@ -1,6 +1,5 @@
-import React from "react";
 import { motion } from "framer-motion";
-import { FaUserCircle } from "react-icons/fa";
+import { FaUserCircle, FaBriefcase, FaGraduationCap, FaHandshake } from "react-icons/fa";
 import homeImage from "../../src/assets/home.png";
 
 const Home = () => {
@@ -99,26 +98,107 @@ const Home = () => {
         <h2 className="text-3xl font-bold text-center text-gray-900">Our Services</h2>
         <div className="grid md:grid-cols-3 gap-8 mt-8">
           {[
-            { title: "Job Search", desc: "Find jobs that match your skills and career goals." },
-            { title: "Skill Tests", desc: "Take assessments to showcase your abilities to employers." },
-            { title: "HR Tools", desc: "Post jobs, review candidates, and schedule interviews." }
+            { title: "Job Search", desc: "Find jobs that match your skills and career goals.", icon: <FaBriefcase className="text-purple-600 w-8 h-8" /> },
+            { title: "Skill Tests", desc: "Take assessments to showcase your abilities to employers.", icon: <FaGraduationCap className="text-purple-600 w-8 h-8" /> },
+            { title: "HR Tools", desc: "Post jobs, review candidates, and schedule interviews.", icon: <FaHandshake className="text-purple-600 w-8 h-8" /> }
           ].map((service, idx) => (
             <motion.div
               key={idx}
-              className="bg-white shadow-md rounded-lg p-6 hover:shadow-lg transition"
+              className="bg-white shadow-md rounded-lg p-6 hover:shadow-lg transition flex flex-col items-center text-center"
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               transition={{ delay: idx * 0.2 }}
               viewport={{ once: true }}
             >
-              <h3 className="text-xl font-semibold text-gray-800">{service.title}</h3>
+              {service.icon}
+              <h3 className="text-xl font-semibold text-gray-800 mt-4">{service.title}</h3>
               <p className="text-gray-500 mt-2">{service.desc}</p>
             </motion.div>
           ))}
         </div>
       </motion.section>
 
-      
+      {/* Student Section */}
+      <motion.section
+        className="bg-white px-8 lg:px-20 py-16"
+        initial={{ opacity: 0, y: 50 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6 }}
+        viewport={{ once: true }}
+      >
+        <h2 className="text-3xl font-bold text-center text-gray-900">For Students</h2>
+        <div className="grid md:grid-cols-2 gap-12 mt-12 items-center">
+          <motion.img
+            src="/student.png"
+            alt="Student preparing"
+            className="rounded-lg shadow-md"
+            initial={{ opacity: 0, x: -50 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.6 }}
+          />
+          <div>
+            <h3 className="text-2xl font-semibold text-gray-800">Empowering Your Career</h3>
+            <p className="text-gray-500 mt-4">
+              Students can explore thousands of job listings, take industry-relevant skill tests, and receive guidance on career paths. Build your portfolio and connect with top companies.
+            </p>
+            <button className="mt-6 bg-purple-600 text-white px-6 py-3 rounded-lg hover:bg-purple-700 transition">
+              Get Started
+            </button>
+          </div>
+        </div>
+      </motion.section>
+
+      {/* Company Section */}
+      <motion.section
+        className="bg-gray-50 px-8 lg:px-20 py-16"
+        initial={{ opacity: 0, y: 50 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6 }}
+        viewport={{ once: true }}
+      >
+        <h2 className="text-3xl font-bold text-center text-gray-900">For Companies</h2>
+        <div className="grid md:grid-cols-2 gap-12 mt-12 items-center">
+          <div>
+            <h3 className="text-2xl font-semibold text-gray-800">Hire The Best Talent</h3>
+            <p className="text-gray-500 mt-4">
+              Companies can post job openings, access skill-tested candidates, and manage hiring with powerful tools. Save time and hire the right person faster.
+            </p>
+            <button className="mt-6 border border-purple-600 text-purple-600 px-6 py-3 rounded-lg hover:bg-purple-50 transition">
+              Post a Job
+            </button>
+          </div>
+          <motion.img
+            src="/company.png"
+            alt="Company meeting"
+            className="rounded-lg shadow-md"
+            initial={{ opacity: 0, x: 50 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.6 }}
+          />
+        </div>
+      </motion.section>
+
+      {/* Call to Action */}
+      <motion.section
+        className="bg-purple-600 text-white text-center px-8 lg:px-20 py-16"
+        initial={{ opacity: 0, y: 50 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6 }}
+        viewport={{ once: true }}
+      >
+        <h2 className="text-3xl font-bold">Ready to Start Your Journey?</h2>
+        <p className="mt-4 text-lg max-w-2xl mx-auto">
+          Whether you are a student looking for opportunities or a company searching for top talent, WorkFinder is your trusted partner.
+        </p>
+        <div className="flex flex-col md:flex-row justify-center gap-4 mt-6">
+          <button className="bg-white text-purple-600 font-semibold px-8 py-3 rounded-lg hover:bg-gray-100 transition">
+            Join as Student
+          </button>
+          <button className="bg-transparent border border-white px-8 py-3 rounded-lg hover:bg-white hover:text-purple-600 transition">
+            Join as Company
+          </button>
+        </div>
+      </motion.section>
     </div>
   );
 };

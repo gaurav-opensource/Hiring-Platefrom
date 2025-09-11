@@ -20,7 +20,7 @@ const CodingTest = ({ job, onStageUpdate }) => {
           headers: { Authorization: `Bearer ${token}` },
         });
 
-        // ✅ Filter only applicants with stage "test"
+        
         const testStageApplicants = (res.data || []).filter(
           (a) => a.currentStage === "test"
         );
@@ -45,7 +45,7 @@ const CodingTest = ({ job, onStageUpdate }) => {
     );
   };
 
-  // Batch move selected applicants to next stage (Test Evaluation)
+  
   const handleProcessSelected = async () => {
     if (!job || selectedApplicants.length === 0) return;
 
@@ -57,12 +57,12 @@ const CodingTest = ({ job, onStageUpdate }) => {
         `${BASE_URL}/job/${job._id}/batch-update-stage`,
         {
           studentIds: selectedApplicants,
-          stage: "testEvaluation", // update stage to next
+          stage: "testEvaluation", 
         },
         { headers: { Authorization: `Bearer ${token}` } }
       );
 
-      // update frontend
+      
       setApplicants((prev) =>
         prev.filter((a) => !selectedApplicants.includes(a._id))
       );
@@ -70,7 +70,7 @@ const CodingTest = ({ job, onStageUpdate }) => {
       setSelectedApplicants([]);
 
       if (onStageUpdate)
-        onStageUpdate({ ...job, currentStep: 3 }); // optional update job currentStep
+        onStageUpdate({ ...job, currentStep: 3 }); 
 
       alert("Selected applicants moved to Test Evaluation stage!");
     } catch (err) {

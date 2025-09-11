@@ -1,52 +1,143 @@
-from flask import Flask, request, jsonify
-import requests
-import PyPDF2
-import docx
-from io import BytesIO
-from sklearn.feature_extraction.text import TfidfVectorizer
-from sklearn.metrics.pairwise import cosine_similarity
+# Required Libraries
+# pip install flask pdfplumber spacy sentence-transformers scikit-learn nltk requests
+
+import pdfplumber
 import re
+import nltk
+import requests
+import tempfile
+from flask import Flask, request, jsonify
+from sklearn.metrics.pairwise import cosine_similarity
+from sentence_transformers import SentenceTransformer
+
+# NLTK setup
+nltk.download('stopwords')
+from nltk.corpus import stopwords
+stop_words = set(stopwords.words('english'))
 
 app = Flask(__name__)
 
-# -----------------------
-# Helper Functions
-# -----------------------
+# ------------------------------
+# Step 1: Download PDF from URL
+# ------------------------------
+def get_pdf_from_url(url):
+    response = requests.get(url)
+    if response.status_code == 200:
+        temp_file = tempfile.NamedTemporaryFile(delete=False, suffix=".pdf")
+        temp_file.write(response.content)
+        temp_file.close()
+        return temp_file.name
+    else:
+        raise Exception("Failed to download PDF from URL")
 
-def extract_text_from_pdf(file_bytes):
-    try:
-        pdf_reader = PyPDF2.PdfReader(BytesIO(file_bytes))
-        text = ""
-        for page in pdf_reader.pages:
-            text += page.extract_text() or ""
-        return text
-    except Exception as e:
-        print("PDF extraction error:", e)
-        return ""
+# ------------------------------
+# Step 2: Extract text from PDF
+# ------------------------------
+def extract_text_from_pdf(pdf_path):
+    text = ""
+    with pdfplumber.open(pdf_path) as pdf:
+        for page in pdf.pages:
+            page_text = page.extract_text()
+            if page_text:
+                text += page_text + " "
+    return text.lower()
 
-def extract_text_from_docx(file_bytes):
-    try:
-        doc = docx.Document(BytesIO(file_bytes))
-        return "\n".join([para.text for para in doc.paragraphs])
-    except Exception as e:
-        print("DOCX extraction error:", e)
-        return ""
-
+# ------------------------------
+# Step 3: Clean text
+# ------------------------------
 def clean_text(text):
-    text = text.lower()
-    text = re.sub(r"[^a-z0-9\s]", " ", text)
-    return text
+    text = re.sub(r'[^a-zA-Z0-9\s]', ' ', text)  # remove special characters
+    tokens = text.split()
+    tokens = [word for word in tokens if word not in stop_words]
+    return " ".join(tokens)
 
-def calculate_similarity(resume_text, job_description):
-    vectorizer = TfidfVectorizer()
-    tfidf_matrix = vectorizer.fit_transform([resume_text, job_description])
-    similarity = cosine_similarity(tfidf_matrix[0:1], tfidf_matrix[1:2])[0][0]
-    return round(similarity * 100, 2)  # return score out of 100
+# ------------------------------
+# Step 4: Extract sections
+# ------------------------------
+def extract_sections(text):
+    skills, experience, education = [], [], []
+    lines = text.split('\n')
 
-# -----------------------
-# API Endpoint
-# -----------------------
+    for line in lines:
+        line_lower = line.lower()
+        if any(word in line_lower for word in ["skill", "technologies", "tools"]):
+            skills.append(line)
+        elif any(word in line_lower for word in ["experience", "worked at", "projects"]):
+            experience.append(line)
+        elif any(word in line_lower for word in ["education", "degree", "university", "college"]):
+            education.append(line)
 
+    return {
+        "skills": " ".join(skills),
+        "experience": " ".join(experience),
+        "education": " ".join(education)
+    }
+
+# ------------------------------
+# Step 5: Keyword Matching
+# ------------------------------
+def keyword_match_score(resume_text, jd_text):
+    jd_keywords = set(clean_text(jd_text).split())
+    resume_words = set(resume_text.split())
+    match_count = len(jd_keywords.intersection(resume_words))
+    score = match_count / len(jd_keywords) if len(jd_keywords) > 0 else 0
+    return score, jd_keywords - resume_words
+
+# ------------------------------
+# Step 6: Semantic Similarity
+# ------------------------------
+def semantic_similarity_score(resume_text, jd_text):
+    model = SentenceTransformer('all-MiniLM-L6-v2')
+    embeddings = model.encode([resume_text, jd_text])
+    similarity = cosine_similarity([embeddings[0]], [embeddings[1]])[0][0]
+    return similarity
+
+# ------------------------------
+# Step 7: Section-wise Resume Score
+# ------------------------------
+def calculate_resume_score(resume_pdf_path, jd_text):
+    resume_text = extract_text_from_pdf(resume_pdf_path)
+    resume_text = clean_text(resume_text)
+    jd_text_clean = clean_text(jd_text)
+
+    sections = extract_sections(resume_text)
+    section_scores = {}
+    missing_keywords_total = set()
+
+    for section_name, section_text in sections.items():
+        if section_text.strip() == "":
+            section_scores[section_name] = {
+                "keyword_score": 0,
+                "semantic_score": 0,
+                "missing_keywords": "All"
+            }
+            continue
+
+        keyword_score, missing_keywords = keyword_match_score(section_text, jd_text_clean)
+        semantic_score = semantic_similarity_score(section_text, jd_text_clean)
+
+        section_scores[section_name] = {
+            "keyword_score": round(keyword_score * 100, 2),
+            "semantic_score": round(semantic_score * 100, 2),
+            "missing_keywords": list(missing_keywords)
+        }
+        missing_keywords_total.update(missing_keywords)
+
+    weights = {"skills": 0.4, "experience": 0.4, "education": 0.2}
+    final_score = 0
+    for sec, score in section_scores.items():
+        sec_avg = 0.5 * score["keyword_score"] + 0.5 * score["semantic_score"]
+        final_score += sec_avg * weights.get(sec, 0)
+
+    return {
+        "final_score": round(final_score, 2),
+        "section_scores": section_scores,
+        "missing_keywords_total": list(missing_keywords_total)
+    }
+
+# ------------------------------
+# Step 8: API Route
+# ------------------------------
 @app.route("/calculate-score", methods=["POST"])
 def calculate_score():
     try:
@@ -57,38 +148,14 @@ def calculate_score():
         if not resume_link or not job_description:
             return jsonify({"error": "Missing resume link or job description"}), 400
 
-        # 1. Download resume
-        response = requests.get(resume_link)
-        if response.status_code != 200:
-            return jsonify({"error": "Could not fetch resume"}), 400
+        resume_path = get_pdf_from_url(resume_link)
+        result = calculate_resume_score(resume_path, job_description)
 
-        file_bytes = response.content
-        file_type = resume_link.split(".")[-1].lower()
-
-        # 2. Extract resume text
-        if file_type == "pdf":
-            resume_text = extract_text_from_pdf(file_bytes)
-        elif file_type in ["doc", "docx"]:
-            resume_text = extract_text_from_docx(file_bytes)
-        else:
-            return jsonify({"error": "Unsupported file format"}), 400
-
-        # 3. Clean both texts
-        resume_text = clean_text(resume_text)
-        job_description = clean_text(job_description)
-
-        # 4. Calculate similarity score
-        score = calculate_similarity(resume_text, job_description)
-
-        return jsonify({"score": score})
+        return jsonify(result), 200
 
     except Exception as e:
-        print("Error:", e)
         return jsonify({"error": str(e)}), 500
 
-# -----------------------
-# Run the Flask app
-# -----------------------
-if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=5002, debug=True)
 
+if __name__ == "__main__":
+    app.run(debug=True, port=5000)

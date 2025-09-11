@@ -2,16 +2,14 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const User = require('../model/user.model');
 const { studentRegisterSchema, loginSchema } = require('../config/Schema');
-const ApplicationProgress = require('../model/applicationProgress.model.js');
 
 
-// ✅ REGISTER
+
 exports.register = async (req, res) => {
   const { error } = studentRegisterSchema.validate(req.body);
   if (error) {
     return res.status(400).json({ message: error.details[0].message });
   }
-
   try {
     const {
       name,
@@ -71,7 +69,7 @@ exports.register = async (req, res) => {
 };
 
 
-// ✅ LOGIN
+
 exports.login = async (req, res) => {
   const { error } = loginSchema.validate(req.body);
   if (error) {
@@ -91,7 +89,7 @@ exports.login = async (req, res) => {
       return res.status(400).json({ message: "Invalid password" });
     }
 
-    // 👇 token me role bhi embed kar diya
+    
     const token = jwt.sign(
       { userId: user._id, role: user.role }, 
       process.env.JWT_SECRET,
@@ -100,7 +98,7 @@ exports.login = async (req, res) => {
 
     res.status(200).json({
       token,
-      role: user.role,  // 👈 return role here
+      role: user.role,  
       user: {
         id: user._id,
         name: user.name,
@@ -116,7 +114,7 @@ exports.login = async (req, res) => {
 
 
 
-// ✅ Get Profile
+
 exports.getProfile = async (req, res) => {
   try {
     const user = await User.findById(req.user.userId);
@@ -150,42 +148,26 @@ exports.getProfile = async (req, res) => {
 };
 
 
-// ✅ Update Profile
+
 exports.updateProfile = async (req, res) => {
   try {
-    const user = await Student.findById(req.user.userId);
-
+    const user = await User.findById(req.user.userId);
+     console.log("hai , my name is gaurav yadav")
     if (!user) {
       return res.status(404).json({ message: "User not found" });
     }
 
-    const updatableFields = [
-      "name",
-      "phone",
-      "profilePhoto",
-      "college",
-      "degree",
-      "branch",
-      "graduationYear",
-      "location",
-      "skills",
-      "experience",
-      "projects",
-      "certifications",
-      "about",
-      "socialLinks",
-      "resume"
-    ];
+    const { name, email, phone, location, about } = req.body;
 
-    updatableFields.forEach(field => {
-      if (req.body[field] !== undefined) {
-        user[field] = req.body[field];
-      }
-    });
+    if (name !== undefined) user.name = name;
+    if (email !== undefined) user.email = email;
+    if (phone !== undefined) user.phone = phone;
+    if (location !== undefined) user.location = location;
+    if (about !== undefined) user.about = about;
 
     await user.save();
 
-    return res.status(200).json({ message: "Profile updated successfully" });
+    return res.status(200).json({ message: "Profile updated successfully", user });
   } catch (error) {
     return res.status(500).json({ message: error.message });
   }

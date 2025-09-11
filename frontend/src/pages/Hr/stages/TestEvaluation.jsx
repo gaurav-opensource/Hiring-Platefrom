@@ -6,7 +6,7 @@ const BASE_URL = "http://localhost:5000/api";
 const TestEvaluation = ({ job }) => {
   const [loading, setLoading] = useState(false);
   const [links, setLinks] = useState([]);
-  const [hrEmail, setHrEmail] = useState(""); // HR email state
+  const [hrEmail, setHrEmail] = useState(""); 
 
   const handleGenerateLinks = async () => {
     if (!job) return;
@@ -18,7 +18,7 @@ const TestEvaluation = ({ job }) => {
 
       const res = await axios.post(
         `${BASE_URL}/job/${job._id}/generate-links`,
-        { email: hrEmail }, // HR email send in body
+        { email: hrEmail }, 
         {
           headers: { Authorization: `Bearer ${token}` },
         }
@@ -44,7 +44,7 @@ const TestEvaluation = ({ job }) => {
             Evaluating test results for job: <strong>{job.title}</strong>
           </p>
 
-          {/* HR Email Input */}
+        
           <div className="mb-4">
             <label className="block mb-1 font-medium">HR Email:</label>
             <input
@@ -56,7 +56,6 @@ const TestEvaluation = ({ job }) => {
             />
           </div>
 
-          {/* Generate Test Links Button */}
           <button
             onClick={handleGenerateLinks}
             disabled={loading}
@@ -65,7 +64,7 @@ const TestEvaluation = ({ job }) => {
             {loading ? "Generating Links..." : "Generate Test Links & Send Email"}
           </button>
 
-          {/* Display Generated Links */}
+        
           {links.length > 0 && (
             <div className="mt-4">
               <h4 className="font-semibold mb-2">Generated Links:</h4>

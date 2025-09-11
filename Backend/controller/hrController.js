@@ -1,10 +1,8 @@
 const Joi = require("joi");
 const bcrypt = require("bcryptjs");
-const jwt = require("jsonwebtoken");
 const User = require("../model/user.model");
 const Job = require('../model/job.model');
 
-// Schema for HR registration and login
 const hrSchema = Joi.object({
   name: Joi.string().required(),
   email: Joi.string().email().required(),
@@ -19,7 +17,8 @@ const loginSchema = Joi.object({
   password: Joi.string().required()
 });
 
-//HR Registration
+
+
 exports.registerHR = async (req, res) => {
   const { error } = hrSchema.validate(req.body);
   if (error) {
@@ -57,8 +56,6 @@ exports.registerHR = async (req, res) => {
 
 
 
-// Get HR Profile
-// make sure you use `exports.` OR `export const` consistently
 
 exports.getHRProfile = async (req, res) => {
   try {
@@ -80,7 +77,6 @@ exports.getHRProfile = async (req, res) => {
 };
 
 
-//Update HR Profile
 exports.updateHRProfile = async (req, res) => {
   try {
     const hr = await User.findById(req.user.userId);
@@ -102,7 +98,7 @@ exports.updateHRProfile = async (req, res) => {
   }
 };
 
-//Create Job
+
 exports.createJob = async(req, res) => {
   try {
     const jobData = req.body;
@@ -119,7 +115,7 @@ exports.createJob = async(req, res) => {
 };
 
 
-// get all job which posted by hr
+
 exports.getJobsByHR = async (req, res) => {
   try {
     // Get HR ID from authenticated user

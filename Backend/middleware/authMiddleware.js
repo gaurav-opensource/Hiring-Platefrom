@@ -14,7 +14,6 @@ const authenticate = async (req, res, next) => {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
     const userId = decoded.userId;
 
-    // Find user directly from User collection
     const user = await User.findById(userId);
     if (!user) {
       return res.status(401).json({ message: "Unauthorized: User not found" });
@@ -22,7 +21,7 @@ const authenticate = async (req, res, next) => {
 
     req.user = {
       userId: user._id,
-      role: user.role, // 👈 directly from DB
+      role: user.role, 
       email: user.email,
       name: user.name,
     };

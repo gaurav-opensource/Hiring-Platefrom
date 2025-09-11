@@ -5,7 +5,7 @@ const ApplicationProgress = require("../model/applicationProgress.model");
 const Question = require("../model/question.model");
 const { runSingleTest } = require("../utils/judge0");
 
-// Create question (HR)
+
 router.post("/create", async (req, res) => {
    try {
     const { jobId, title, description, starterCode, marks, testCases } = req.body;
@@ -26,7 +26,7 @@ router.post("/create", async (req, res) => {
   }
 });
 
-// Get questions by jobId (frontend test page will call this; exclude hidden testcases)
+
 router.get("/:jobId", async (req, res) => {
   try {
     const { jobId } = req.params;
@@ -57,7 +57,7 @@ router.get("/:jobId", async (req, res) => {
   }
 });
 
-// Student submits code for a single question
+
 router.post("/submit", async (req, res) => {
   try {
     const { userId, jobId, questionId, code, languageId } = req.body;

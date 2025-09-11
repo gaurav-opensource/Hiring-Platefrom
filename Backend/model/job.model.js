@@ -5,14 +5,14 @@ const jobSchema = new mongoose.Schema(
   {
     title: {
       type: String,
-      trim: true, // Example: "Software Engineer - Frontend"
+      trim: true, 
     },
     company: {
       type: String,
     },
     location: {
       type: String,
-      default: "Remote", // Remote / On-site / Hybrid
+      default: "Remote", 
     },
     employmentType: {
       type: String,
@@ -24,7 +24,7 @@ const jobSchema = new mongoose.Schema(
       default: "Fresher",
     },
     description: {
-      type: String, // JD (Job Description)
+      type: String, 
     },
     responsibilities: [
       {
@@ -33,22 +33,22 @@ const jobSchema = new mongoose.Schema(
     ],
     requirements: [
       {
-        type: String, // Example: "Proficiency in React.js"
+        type: String,
       },
     ],
     skills: [
       {
-        type: String, // Example: "JavaScript", "Node.js", "MongoDB"
+        type: String,
       },
     ],
     salaryRange: {
       min: { type: Number },
       max: { type: Number },
-      currency: { type: String, default: "INR" }, // or USD/EUR
+      currency: { type: String, default: "INR" }, 
     },
     postedBy: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "User", // HR/Admin who created the job
+      ref: "User", 
     },
     deadline: {
       type: Date,
@@ -59,35 +59,15 @@ const jobSchema = new mongoose.Schema(
     },
      currentStep: {
     type: Number,
-    default: 0, // stepper ka index (0 = first step)
+    default: 0, 
     },
-
-    // ✅ New Field: Recruitment Steps
-    steps: [
-      {
-        key: { type: String, required: true },   // e.g. "resumeScreen"
-        label: { type: String, required: true }, // e.g. "Resume Screening"
-        completed: { type: Boolean, default: false }, // track progress
-      },
-    ],
+    title: String,
+    stage: { type: String, enum: ["resume", "profile", "coding", "evaluation", "interview"], default: "resume" },
   },
   { timestamps: true }
 );
 
-// ✅ Default steps when a new Job is created
-jobSchema.pre("save", function (next) {
-  if (!this.steps || this.steps.length === 0) {
-    this.steps = [
-      { key: "resumeScreen", label: "Resume Screening" },
-      { key: "sortResume", label: "Sort by Resume Score" },
-      { key: "selectForTest", label: "Select Top for Test" },
-      { key: "createQ", label: "Create Questions" },
-      { key: "genLinks", label: "Generate Test Links" },
-      { key: "calcScore", label: "Calculate Test Scores" },
-      { key: "finalSelect", label: "Final Selection (Interview)" },
-    ];
-  }
-  next();
-});
+
+
 
 module.exports = mongoose.model("Job", jobSchema);

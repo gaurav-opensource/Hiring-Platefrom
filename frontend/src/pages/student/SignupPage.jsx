@@ -1,35 +1,18 @@
-import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import  { useState } from "react";
+import { useNavigate, Link } from "react-router-dom";
 import {
   TextField,
   Button,
   Typography,
   Box,
   Alert,
-  CircularProgress,
+  Paper,
 } from "@mui/material";
-import axios from "axios";
 import { registerStudent } from "../../services/auth.service";
-
-// cloudinary upload helper
-const uploadToCloudinary = async (file, type = "image") => {
-  const data = new FormData();
-  data.append("file", file);
-  data.append("upload_preset", "ml_default");
-  data.append("folder", "Healthcare");
-
-  const url =
-    type === "image"
-      ? "https://api.cloudinary.com/v1_1/dznnyaj0z/image/upload"
-      : "https://api.cloudinary.com/v1_1/dznnyaj0z/raw/upload";
-
-  const res = await axios.post(url, data);
-  return res.data.secure_url;
-};
+import Loader from '../../ui/Loader';
+import uploadToCloudinary from '../../services/cloudinary.service'
 
 const StudentSignup = () => {
-  const [step, setStep] = useState(1); // step1 = details, step2 = upload
-
   const [form, setForm] = useState({
     name: "",
     email: "",
@@ -42,48 +25,42 @@ const StudentSignup = () => {
     graduationYear: "",
     skills: "",
     about: "",
-    socialLinks: {
-      linkedin: "",
-      github: "",
-      portfolio: "",
-    },
+    socialLinks: { linkedin: "", github: "", portfolio: "" },
   });
 
-  const [profilePhoto, setProfilePhoto] = useState(null);
-  const [resume, setResume] = useState(null);
-
+  const [files, setFiles] = useState({ profilePhoto: null, resume: null });
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState(null);
+  
   const navigate = useNavigate();
 
-  // form field change
   const handleChange = (e) => {
     const { name, value } = e.target;
     if (name.startsWith("socialLinks.")) {
       const key = name.split(".")[1];
-      setForm({ ...form, socialLinks: { ...form.socialLinks, [key]: value } });
+      setForm({
+        ...form,
+        socialLinks: { ...form.socialLinks, [key]: value },
+      });
     } else {
       setForm({ ...form, [name]: value });
     }
   };
 
-  // step 1 submit → go to step 2
-  const handleDetailsSubmit = (e) => {
-    e.preventDefault();
-    setStep(2);
+  const handleFileChange = (e, type) => {
+    setFiles({ ...files, [type]: e.target.files[0] });
   };
 
-  // final submit with uploads
-  const handleUploadSubmit = async (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
     setMessage(null);
 
     try {
-      const profilePhotoUrl = profilePhoto
-        ? await uploadToCloudinary(profilePhoto, "image")
-        : "";
-      const resumeUrl = resume ? await uploadToCloudinary(resume, "raw") : "";
+      const [profilePhotoUrl, resumeUrl] = await Promise.all([
+        files.profilePhoto ? uploadToCloudinary(files.profilePhoto, "image") : "",
+        files.resume ? uploadToCloudinary(files.resume, "raw") : "",
+      ]);
 
       const payload = {
         ...form,
@@ -94,211 +71,96 @@ const StudentSignup = () => {
 
       await registerStudent(payload);
 
-      setMessage({
-        type: "success",
-        text: "Registration completed successfully!",
-      });
-      setStep(1);
-      setForm({
-        name: "",
-        email: "",
-        password: "",
-        phone: "",
-        location: "",
-        college: "",
-        degree: "",
-        branch: "",
-        graduationYear: "",
-        skills: "",
-        about: "",
-        socialLinks: {
-          linkedin: "",
-          github: "",
-          portfolio: "",
-        },
-      });
-      setProfilePhoto(null);
-      setResume(null);
-      navigate('/login')
+      setMessage({ type: "success", text: "Registration completed successfully!" });
+      navigate("/login");
     } catch (err) {
-      setMessage({ type: "error", text: "Upload failed" });
+      setMessage({ type: "error", text: "Signup failed. Please try again." });
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <Box maxWidth={600} mx="auto" mt={4}>
-      {step === 1 && (
-        <>
-          <Typography variant="h5" mb={2}>
-            Student Signup - Step 1
-          </Typography>
-          <form onSubmit={handleDetailsSubmit}>
-            <TextField
-              fullWidth
-              label="Name"
-              name="name"
-              margin="normal"
-              onChange={handleChange}
-              required
-            />
-            <TextField
-              fullWidth
-              label="Email"
-              name="email"
-              type="email"
-              margin="normal"
-              onChange={handleChange}
-              required
-            />
-            <TextField
-              fullWidth
-              label="Password"
-              name="password"
-              type="password"
-              margin="normal"
-              onChange={handleChange}
-              required
-            />
-            <TextField
-              fullWidth
-              label="Phone"
-              name="phone"
-              margin="normal"
-              onChange={handleChange}
-            />
-            <TextField
-              fullWidth
-              label="Location"
-              name="location"
-              margin="normal"
-              onChange={handleChange}
-            />
-            <TextField
-              fullWidth
-              label="College"
-              name="college"
-              margin="normal"
-              onChange={handleChange}
-            />
-            <TextField
-              fullWidth
-              label="Degree"
-              name="degree"
-              margin="normal"
-              onChange={handleChange}
-            />
-            <TextField
-              fullWidth
-              label="Branch"
-              name="branch"
-              margin="normal"
-              onChange={handleChange}
-            />
-            <TextField
-              fullWidth
-              label="Graduation Year"
-              name="graduationYear"
-              type="number"
-              margin="normal"
-              onChange={handleChange}
-            />
-            <TextField
-              fullWidth
-              label="Skills (comma-separated)"
-              name="skills"
-              margin="normal"
-              onChange={handleChange}
-            />
-            <TextField
-              fullWidth
-              multiline
-              rows={4}
-              label="About"
-              name="about"
-              margin="normal"
-              onChange={handleChange}
-            />
-            <TextField
-              fullWidth
-              label="LinkedIn"
-              name="socialLinks.linkedin"
-              margin="normal"
-              onChange={handleChange}
-            />
-            <TextField
-              fullWidth
-              label="GitHub"
-              name="socialLinks.github"
-              margin="normal"
-              onChange={handleChange}
-            />
-            <TextField
-              fullWidth
-              label="Portfolio"
-              name="socialLinks.portfolio"
-              margin="normal"
-              onChange={handleChange}
-            />
+    <Box
+      sx={{
+        display: "flex",
+        justifyContent: "center",
+        alignItems: "center",
+        minHeight: "100vh",
+        bgcolor: "background.default",
+        p: 2,
+      }}
+    >
+      <Paper elevation={3} sx={{ p: 4, maxWidth: 600, width: "100%", borderRadius: 2 }}>
+        <Typography variant="h4" align="center" gutterBottom color="primary">
+          Student Signup
+        </Typography>
 
-            <Button
-              type="submit"
-              variant="contained"
-              color="primary"
-              sx={{ mt: 2 }}
-            >
-              Next
-            </Button>
-          </form>
-        </>
-      )}
+        {message && (
+          <Alert severity={message.type} sx={{ mb: 2 }}>
+            {message.text}
+          </Alert>
+        )}
 
-      {step === 2 && (
-        <>
-          <Typography variant="h5" mb={2}>
-            Student Signup - Step 2
-          </Typography>
-          <form onSubmit={handleUploadSubmit}>
-            <Box mt={2}>
-              <Typography>Upload Profile Photo</Typography>
-              <input
-                type="file"
-                accept="image/*"
-                onChange={(e) => setProfilePhoto(e.target.files[0])}
-              />
-            </Box>
+        <form onSubmit={handleSubmit}>
+          {["name", "email", "password", "phone", "location", "college", "degree", "branch", "graduationYear", "skills", "about"].map((field) => (
+            <TextField
+              key={field}
+              fullWidth
+              label={field.charAt(0).toUpperCase() + field.slice(1)}
+              name={field}
+              type={field === "password" ? "password" : field === "graduationYear" ? "number" : "text"}
+              margin="normal"
+              onChange={handleChange}
+              required={["name", "email", "password"].includes(field)}
+            />
+          ))}
 
-            <Box mt={2}>
-              <Typography>Upload Resume (PDF)</Typography>
-              <input
-                type="file"
-                accept=".pdf"
-                onChange={(e) => setResume(e.target.files[0])}
-              />
-            </Box>
+          {["linkedin", "github", "portfolio"].map((key) => (
+            <TextField
+              key={key}
+              fullWidth
+              label={key.charAt(0).toUpperCase() + key.slice(1)}
+              name={`socialLinks.${key}`}
+              margin="normal"
+              onChange={handleChange}
+            />
+          ))}
 
+          <Box mt={2}>
+            <Typography variant="subtitle1" gutterBottom>
+              Upload Profile Photo
+            </Typography>
+            <input type="file" accept="image/*" onChange={(e) => handleFileChange(e, "profilePhoto")} />
+          </Box>
+
+          <Box mt={2}>
+            <Typography variant="subtitle1" gutterBottom>
+              Upload Resume (PDF)
+            </Typography>
+            <input type="file" accept=".pdf" onChange={(e) => handleFileChange(e, "resume")} />
+          </Box>
+
+          <Box mt={3}>
             {loading ? (
-              <CircularProgress sx={{ mt: 2 }} />
+              <Box display="flex" justifyContent="center">
+                <Loader />  {/* ✅ Use your custom Loader here */}
+              </Box>
             ) : (
-              <Button
-                type="submit"
-                variant="contained"
-                color="primary"
-                sx={{ mt: 2 }}
-              >
-                Finish Signup
+              <Button type="submit" variant="contained" color="primary" fullWidth>
+                Signup
               </Button>
             )}
-          </form>
-        </>
-      )}
+          </Box>
 
-      {message && (
-        <Alert severity={message.type} sx={{ mt: 2 }}>
-          {message.text}
-        </Alert>
-      )}
+          <Typography variant="body2" align="center" sx={{ mt: 3 }}>
+            Already have an account?{" "}
+            <Link to="/login" style={{ textDecoration: "none", color: "#1976d2", fontWeight: "500" }}>
+              Login here
+            </Link>
+          </Typography>
+        </form>
+      </Paper>
     </Box>
   );
 };

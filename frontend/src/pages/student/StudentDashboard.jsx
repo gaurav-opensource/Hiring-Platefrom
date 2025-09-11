@@ -1,73 +1,96 @@
-import React, { useEffect, useState } from "react";
+import  { useEffect, useState } from "react";
 import axios from "axios";
+import Loader from '../../ui/Loader'  // ✅ Import your Loader component
+
+const stages = ['resume', 'test', 'interview', 'final', 'rejected'];
 
 const StudentDashboard = () => {
-  const [jobs, setJobs] = useState([]);
+  const [applications, setApplications] = useState([]);
   const [loading, setLoading] = useState(true);
+  const token = localStorage.getItem("token"); // ✅ get token here
 
   useEffect(() => {
-    const fetchJobs = async () => {
+    const fetchApplications = async () => {
       try {
-        // 👇 LocalStorage se token le lo
-        const token = localStorage.getItem("token");
-        console.log(token)
-
-        const data  = await axios.get(
-          "http://localhost:5000/api/job/getjobs",
+        const res = await axios.get(
+          `http://localhost:5000/api/job/my-applications-stages`,
           {
             headers: {
-               Authorization: `Bearer ${token}`,
-            },
+              Authorization: `Bearer ${token}` // ✅ send token in header
+            }
           }
         );
-
-        setJobs(data);
-      } catch (error) {
-        console.error("Error fetching jobs:", error);
+        setApplications(res.data);
+      } catch (err) {
+        console.error(err);
       } finally {
         setLoading(false);
       }
     };
 
-    fetchJobs();
-  }, []);
+    fetchApplications();
+    const interval = setInterval(fetchApplications, 5000);
+    return () => clearInterval(interval);
+  }, [token]);
 
-  if (loading) return <p>Loading...</p>;
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <Loader /> {/* ✅ Show your Loader component while loading */}
+      </div>
+    );
+  }
+
+  if (applications.length === 0) {
+    return (
+      <div className="text-center mt-10 pt-20">
+        No applications found.
+      </div>
+    );
+  }
 
   return (
-    <div className="p-4">
-      <h2 className="text-xl font-bold mb-4">My Applied Jobs</h2>
-      {jobs.length === 0 ? (
-        <p>No jobs applied yet.</p>
-      ) : (
-        jobs.map((job) => (
-          <div key={job.jobId} className="border p-4 rounded mb-3 shadow">
-            <h3 className="text-lg font-semibold">{job.title}</h3>
-            <p className="text-gray-700">
-              {job.company} - {job.location}
-            </p>
-            <p className="text-sm">{job.description}</p>
+    <div className="max-w-3xl mx-auto mt-8 p-4 pt-28">
+      <h1 className="text-2xl font-bold mb-6 text-center">My Application Stages</h1>
 
-            <div className="mt-2">
-              <h4 className="font-medium">Application Progress:</h4>
-              <ul className="flex gap-3 mt-1">
-                {job.allStages.map((stage, idx) => (
-                  <li
-                    key={idx}
-                    className={`px-3 py-1 rounded ${
-                      stage === job.currentStage
-                        ? "bg-blue-500 text-white"
-                        : "bg-gray-200"
-                    }`}
+      {applications.map((app) => (
+        <div key={app._id} className="bg-white shadow rounded-lg p-4 mb-6">
+          <h2 className="text-xl font-semibold">{app.jobTitle}</h2>
+          <p className="text-gray-600 mb-4">{app.company}</p>
+
+          <div className="flex justify-between items-center">
+            {stages.map((stage, index) => {
+              let status = 'pending';
+              if (stages.indexOf(app.currentStage) > index) status = 'completed';
+              else if (stages.indexOf(app.currentStage) === index) status = 'current';
+
+              return (
+                <div key={stage} className="text-center w-1/5">
+                  <div
+                    className={`w-12 h-12 mx-auto rounded-full flex items-center justify-center mb-1 ${
+                      status === 'completed'
+                        ? 'bg-green-500'
+                        : status === 'current'
+                        ? 'bg-blue-500'
+                        : 'bg-gray-300'
+                    } text-white font-bold`}
                   >
-                    {stage}
-                  </li>
-                ))}
-              </ul>
-            </div>
+                    {index + 1}
+                  </div>
+                  <p className="text-sm capitalize">{stage}</p>
+                  <p className="text-xs text-gray-500">
+                    {status === 'completed'
+                      ? 'Completed'
+                      : status === 'current'
+                      ? 'In Progress'
+                      : ''}
+                  </p>
+                </div>
+              );
+            })}
           </div>
-        ))
-      )}
+        </div>
+      ))}
     </div>
   );
 };

@@ -1,10 +1,8 @@
 import axios from "axios";
-import React, { useState } from "react";
-import { useParams } from "react-router-dom";
+import { useState} from "react";
+
 
 export default function HRCreateQuestion() {
-  // const { jobId } = useParams('68ac47aa7d8fc514745289f7');
-  // const   // ✅ URL se jobId fetch
   const jobId = '68ac47aa7d8fc514745289f7';
   const [title, setTitle] = useState("");
   const [desc, setDesc] = useState("");
@@ -37,7 +35,7 @@ export default function HRCreateQuestion() {
         HR - Create Question
       </h2>
 
-      {/* Job ID (read-only from URL) */}
+     
       <div className="mb-4">
         <label className="block text-sm font-medium text-gray-700">
           Job ID (from URL)
@@ -49,7 +47,7 @@ export default function HRCreateQuestion() {
         />
       </div>
 
-      {/* Title */}
+      
       <div className="mb-4">
         <label className="block text-sm font-medium text-gray-700">Title</label>
         <input
@@ -59,7 +57,7 @@ export default function HRCreateQuestion() {
         />
       </div>
 
-      {/* Description */}
+  
       <div className="mb-4">
         <label className="block text-sm font-medium text-gray-700">Description</label>
         <textarea
@@ -69,7 +67,7 @@ export default function HRCreateQuestion() {
         />
       </div>
 
-      {/* Marks */}
+      
       <div className="mb-4">
         <label className="block text-sm font-medium text-gray-700">Marks</label>
         <input
@@ -80,7 +78,7 @@ export default function HRCreateQuestion() {
         />
       </div>
 
-      {/* Test Cases */}
+     
       <h4 className="text-lg font-semibold text-gray-800 mb-2">Test Cases</h4>
       {testCases.map((tc, i) => (
         <div key={i} className="border border-gray-200 rounded-xl p-4 mb-3 bg-gray-50 shadow-sm">
@@ -118,10 +116,9 @@ export default function HRCreateQuestion() {
         onClick={addTC}
         className="bg-green-500 text-white px-4 py-2 rounded-xl shadow hover:bg-green-600 transition"
       >
-        ➕ Add Test Case
       </button>
 
-      {/* Submit */}
+     
       <div className="mt-6">
         <button
           onClick={handleSubmit}

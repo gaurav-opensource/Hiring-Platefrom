@@ -14,10 +14,9 @@ const applicationProgressSchema = new mongoose.Schema({
   testToken: { type: String },
   testCompleted: { type: Boolean, default: false },         
 
-  // New fields for test evaluation
-  score: { type: Number, default: 0 },   // percentage score
-  correct: { type: Number, default: 0 }, // correct test cases
-  total: { type: Number, default: 0 },   // total test cases
+  score: { type: Number, default: 0 },   
+  correct: { type: Number, default: 0 }, 
+  total: { type: Number, default: 0 },  
 
   testScore: Number,             
 

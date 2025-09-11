@@ -7,7 +7,7 @@ export default function MainLayout() {
     <div>
       <Navbar /> 
       <main className="min-h-screen">
-        <Outlet /> {/* Child pages render here */}
+        <Outlet /> 
       </main>
       <Footer />
     </div>

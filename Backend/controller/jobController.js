@@ -1,13 +1,9 @@
 const ApplicationProgress = require('../model/applicationProgress.model.js');
 const Job = require('../model/job.model.js');
 const User = require('../model/user.model.js');
-const JobPipeline = require('../model/currentstep.model.js');
 const Submission = require("../model/submission.model.js");
 const Question = require("../model/question.model.js");
 const PQueue = require("p-queue").default;
-// const resumeQueue = require("./resumeQueue.js");
-// const nodemailer = require("nodemailer");
-// const Question = require("../model/question.model.js");
 require("dotenv").config();
 const axios = require("axios");
 
@@ -17,6 +13,7 @@ const applyToJob = async (req, res) => {
   const { jobId } = req.params;
   const {name, email, resumeLink } = req.body;
   const userId = req.user.userId;
+  console.log(userId)
 
   try {
     const jobData = await Job.findById(jobId);
@@ -43,11 +40,10 @@ const applyToJob = async (req, res) => {
   }
 };
 
+
 const getAppliedJobs = async (req, res) => {
   try {
     const {userId} = req.user.userId; 
-
-
    
     const applications = await ApplicationProgress.find({ userId })
       .populate("jobId", "title company location description");
@@ -56,7 +52,6 @@ const getAppliedJobs = async (req, res) => {
       return res.status(404).json({ message: "No applied jobs found" });
     }
 
-    // Response को format करके भेजो
     const formatted = applications.map(app => ({
       jobId: app.jobId._id,
       title: app.jobId.title,
@@ -79,19 +74,17 @@ const calculateResumeScore = async (req, res) => {
   try {
     const { jobId } = req.params;
 
-    // 1. Get job details
+    
     const job = await Job.findById(jobId);
     if (!job) {
       return res.status(404).json({ message: "Job not found" });
     }
 
-    // 2. Get applicants for this job
     const applicants = await ApplicationProgress.find({ jobId });
     if (applicants.length === 0) {
       return res.status(404).json({ message: "No applicants found for this job" });
     }
 
-    // ✅ Job description string (combine description + requirements + responsibilities)
     let jobDescriptionText = job.description || "";
     if (job.requirements && job.requirements.length > 0) {
       jobDescriptionText += "\nRequirements: " + job.requirements.join(", ");
@@ -102,11 +95,9 @@ const calculateResumeScore = async (req, res) => {
 
     const results = [];
 
-    // 3. Loop through applicants
     for (const applicant of applicants) {
-      if (!applicant.resumeLink) continue; // skip if no resume
+      if (!applicant.resumeLink) continue;
 
-      // 4. Call Flask API
       const atsResponse = await axios.post("http://localhost:5002/calculate-score", {
         resumeLink: applicant.resumeLink,
         jobDescription: jobDescriptionText
@@ -116,7 +107,6 @@ const calculateResumeScore = async (req, res) => {
       const scoreData = atsResponse.data;
        console.log(scoreData)
 
-      // 5. Update applicant resumeScore
       applicant.resumeScore = scoreData.score;
       await applicant.save();
 
@@ -183,7 +173,8 @@ const getStudentsByJobId = async (req, res) => {
 }
 
 };
-// // 📌 Shortlist by resume
+
+
 const shortlistTopByResume = async (req, res) => {
   const { jobId, topN } = req.body;
   if (!jobId || !topN || isNaN(topN) || topN <= 0) {
@@ -243,85 +234,7 @@ const shortlistTopByResume = async (req, res) => {
   }
 };
 
-// // 📌 Submit test score
-// const submitTestScore = async (req, res) => {
-//   const { applicationId } = req.params;
-//   const { testScore } = req.body;
 
-//   try {
-//     const application = await ApplicationProgress.findOne({
-//       _id: applicationId,
-//       isShortlisted: true,
-//       currentStage: 'test'
-//     });
-
-//     if (!application) return res.status(400).json({ error: 'Candidate not eligible for test' });
-
-//     application.testScore = testScore;
-//     application.currentStage = 'interview';
-//     await application.save();
-
-//     res.json({ message: 'Test score submitted', application });
-//   } catch (error) {
-//     res.status(500).json({ error: error.message });
-//   }
-// };
-
-// // 📌 Shortlist after test
-// const shortlistAfterTest = async (req, res) => {
-//   const { jobId, topN } = req.body;
-//   try {
-//     const shortlisted = await ApplicationProgress.find({ jobId, currentStage: 'interview' })
-//       .sort({ testScore: -1 })
-//       .limit(topN);
-
-//     for (const app of shortlisted) {
-//       app.currentStage = 'final';
-//       await app.save();
-//     }
-
-//     res.json({ message: 'Final shortlist completed', shortlisted });
-//   } catch (error) {
-//     res.status(500).json({ error: error.message });
-//   }
-// };
-
-// // 📌 Application tracker
-// const getApplicationTracker = async (req, res) => {
-//   try {
-//     const { userId } = req.params;
-//     const applications = await ApplicationProgress.find({ userId })
-//       .select('jobId currentStage testScore')
-//       .populate('jobId', 'title companyName');
-
-//     if (!applications.length) {
-//       return res.status(404).json({ message: 'No applications found' });
-//     }
-
-//     res.json({ message: 'Application tracker fetched', tracker: applications });
-//   } catch (error) {
-//     res.status(500).json({ error: error.message });
-//   }
-// };
-
-// // 📌 Create question
-// const createQuestion = async (req, res) => {
-//   try {
-//     const { jobId, title, text, type, options, correctOption, keywords, language, template, testCases, weight } = req.body;
-
-//     if (!jobId || !title || !text || !type) {
-//       return res.status(400).json({ message: "Required fields missing!" });
-//     }
-
-//     const newQuestion = new Question({ jobId, title, text, type, options, correctOption, keywords, language, template, testCases, weight });
-//     await newQuestion.save();
-
-//     res.status(201).json({ message: "✅ Question created successfully", question: newQuestion });
-//   } catch (err) {
-//     console.error("Error creating question:", err);
-//     res.status(500).json({ message: "Server error", error: err.message });
-//   }
-// };
 const updatePipelineStep = async(req,res) =>{
   const { jobId } = req.params;
   const { step, status } = req.body;
@@ -346,8 +259,6 @@ const updatePipelineStep = async(req,res) =>{
 }
 
 
-// controllers/evaluateController.js
-
 
 
 const LANGUAGE_MAP = {
@@ -357,14 +268,17 @@ const LANGUAGE_MAP = {
   "c++": 54,
   c: 50,
 };
+
+
 const JUDGE0_URL = "https://judge0-ce.p.rapidapi.com";
 const JUDGE0_KEY = "1b7e563300msh3a6a8fa89c5812bp17fcd1jsn302890a8dc8a";
 const JUDGE0_HOST = "judge0-ce.p.rapidapi.com";
+
+
 const evaluateJob = async (req, res) => {
   const { jobId } = req.params;
 
   try {
-    // ✅ Step 1: Find all submissions for this job
     const submissions = await Submission.find({ jobId }).populate("userId");
     console.log(`Found ${submissions.length} submissions for job ${jobId}`);
 
@@ -374,10 +288,8 @@ const evaluateJob = async (req, res) => {
         .json({ message: "No submissions found for this job" });
     }
 
-    // ✅ Create queue (to avoid Judge0 429 errors)
     const queue = new PQueue({ concurrency: 2, interval: 1000, intervalCap: 2 });
 
-    // ✅ Step 2: Process each student's submissions
     for (let submission of submissions) {
       const { userId, submissions: answers } = submission;
 
@@ -392,8 +304,6 @@ const evaluateJob = async (req, res) => {
 
         for (let test of question.testCases) {
           totalTestCases++;
-
-          // ✅ Add Judge0 execution to queue
           queue.add(async () => {
             try {
               const response = await axios.post(
@@ -423,7 +333,6 @@ const evaluateJob = async (req, res) => {
         }
       }
 
-      // ✅ Save results after queue finishes all tasks for this student
       queue.add(async () => {
         const scorePercent = totalTestCases
           ? Math.round((correctTestCases / totalTestCases) * 100)
@@ -441,7 +350,6 @@ const evaluateJob = async (req, res) => {
       });
     }
 
-    // ✅ Wait for all Judge0 + DB tasks
     await queue.onIdle();
 
     res.json({ message: "Evaluation completed successfully ✅" });
@@ -451,10 +359,9 @@ const evaluateJob = async (req, res) => {
   }
 };
 
-// ================== Export All ================== //
+
 module.exports = {
   applyToJob,
-  // calculateResumeScore,
   evaluateJob,
   getJobsByHRId,
   fetchAllJob,
@@ -462,9 +369,4 @@ module.exports = {
   updatePipelineStep,
   getStudentsByJobId,
   calculateResumeScore
-  // shortlistTopByResume,
-  // submitTestScore,
-  // shortlistAfterTest,
-  // getApplicationTracker,
-  // createQuestion,
-};
+}

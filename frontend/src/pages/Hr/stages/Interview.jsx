@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import axios from "axios";
 
 const BASE_URL = "http://localhost:5000/api";
@@ -9,7 +9,6 @@ const Interview = ({ job, onStageUpdate }) => {
   const [processing, setProcessing] = useState(false);
   const [evaluating, setEvaluating] = useState(false);
 
-  // ✅ Fetch all students who completed test
   useEffect(() => {
     if (!job) return;
 
@@ -21,13 +20,13 @@ const Interview = ({ job, onStageUpdate }) => {
           headers: { Authorization: `Bearer ${token}` },
         });
 
-        // ✅ Only students with testCompleted = true
+       
         const testCompleted = (res.data || []).filter(
-          (a) => a.testCompleted === true
+          (a) => a.testCompleted === true && a.userId
         );
 
-        // ✅ Sort by score descending
-        testCompleted.sort((a, b) => b.score - a.score);
+       
+        testCompleted.sort((a, b) => (b.score || 0) - (a.score || 0));
 
         setApplicants(testCompleted);
       } catch (err) {
@@ -41,7 +40,7 @@ const Interview = ({ job, onStageUpdate }) => {
     fetchApplicants();
   }, [job]);
 
-  // ✅ Promote top student(s) to interview stage
+
   const handleSelectTopForInterview = async () => {
     if (applicants.length === 0) return;
 
@@ -49,7 +48,7 @@ const Interview = ({ job, onStageUpdate }) => {
       setProcessing(true);
       const token = localStorage.getItem("token");
 
-      // Example: select top 1 student
+    
       const topStudent = applicants[0];
 
       await axios.post(
@@ -58,13 +57,13 @@ const Interview = ({ job, onStageUpdate }) => {
         { headers: { Authorization: `Bearer ${token}` } }
       );
 
-      // Update frontend list
+ 
       setApplicants((prev) =>
         prev.filter((a) => a.userId._id !== topStudent.userId._id)
       );
 
       if (onStageUpdate)
-        onStageUpdate({ ...job, currentStep: 5 }); // optional update for HRDashboard
+        onStageUpdate({ ...job, currentStep: 5 }); 
 
       alert(`Top student ${topStudent.userId.name} moved to Interview stage!`);
     } catch (err) {
@@ -75,7 +74,7 @@ const Interview = ({ job, onStageUpdate }) => {
     }
   };
 
-  // ✅ Trigger evaluation API
+  
   const handleEvaluateTests = async () => {
     if (!job) return;
 
@@ -101,7 +100,6 @@ const Interview = ({ job, onStageUpdate }) => {
       <h3 className="text-xl font-bold mb-4">Interview Stage</h3>
 
       <div className="mb-4 flex gap-3">
-        {/* ✅ Evaluate Button */}
         <button
           onClick={handleEvaluateTests}
           disabled={evaluating}
@@ -110,10 +108,9 @@ const Interview = ({ job, onStageUpdate }) => {
           {evaluating ? "Evaluating..." : "Run Test Evaluation"}
         </button>
 
-        {/* ✅ Promote Top Student Button */}
         <button
           onClick={handleSelectTopForInterview}
-          disabled={processing}
+          disabled={processing || applicants.length === 0}
           className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 disabled:bg-gray-400"
         >
           {processing ? "Processing..." : "Select Top for Interview"}
@@ -128,14 +125,14 @@ const Interview = ({ job, onStageUpdate }) => {
         <ul className="space-y-3 mb-4">
           {applicants.map((student) => (
             <li
-              key={student.userId._id}
+              key={student.userId?._id}
               className="p-3 border rounded bg-gray-50 flex justify-between items-center"
             >
               <div>
-                <p className="font-medium">{student.userId.name}</p>
-                <p className="text-sm text-gray-600">{student.userId.email}</p>
+                <p className="font-medium">{student.userId?.name || "No Name"}</p>
+                <p className="text-sm text-gray-600">{student.userId?.email || "No Email"}</p>
                 <p className="text-sm text-gray-700">
-                  Test Score: {student.score}
+                  Test Score: {student.score ?? "N/A"}
                 </p>
               </div>
             </li>

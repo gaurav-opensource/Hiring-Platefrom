@@ -6,7 +6,6 @@ export default function RoleSelectionPage() {
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-gradient-to-r from-indigo-200 via-purple-200 to-pink-200">
-      {/* Heading with animation */}
       <motion.h1
         initial={{ y: -50, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
@@ -30,7 +29,6 @@ export default function RoleSelectionPage() {
           🎓 I am a Student
         </motion.button>
 
-        {/* HR Button */}
         <motion.button
           whileHover={{ scale: 1.1 }}
           whileTap={{ scale: 0.9 }}

@@ -3,13 +3,12 @@ const auth = require("../middleware/auth");
 const TestAttempt = require("../models/TestAttempt");
 const Question = require("../models/Question");
 const axios = require("axios");
-// Helper for Judge0
+
 async function runCode(code, languageId, testCases) {
   const results = [];
   let passedCount = 0;
 
   for (const tc of testCases) {
-    // Create submission
     const resp = await axios.post(`${process.env.JUDGE0_URL}/submissions`, {
       source_code: code,
       language_id: languageId,
@@ -24,7 +23,7 @@ async function runCode(code, languageId, testCases) {
 
     const token = resp.data.token;
 
-    // Poll until finished
+    
     let result;
     do {
       const r = await axios.get(`${process.env.JUDGE0_URL}/submissions/${token}`, {
@@ -34,9 +33,9 @@ async function runCode(code, languageId, testCases) {
         }
       });
       result = r.data;
-    } while (result.status.id < 3); // 1=In Queue, 2=Processing
+    } while (result.status.id < 3); 
 
-    // Compare outputs
+    
     const actual = (result.stdout || "").trim();
     const expected = tc.output.trim();
     const passed = actual === expected;
@@ -54,7 +53,7 @@ async function runCode(code, languageId, testCases) {
   return { results, passedCount, total: testCases.length };
 }
 
-// Submit code
+
 router.post("/submit", auth, async (req, res) => {
   try {
     const { code, language, questionId } = req.body;
@@ -84,5 +83,7 @@ router.post("/submit", auth, async (req, res) => {
     res.status(500).json({ message: "Server error", error: err.message });
   }
 });
+
+
 
 module.exports = router;

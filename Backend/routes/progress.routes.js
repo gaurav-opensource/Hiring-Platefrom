@@ -2,10 +2,9 @@ const express = require("express");
 const crypto = require("crypto");
 const router = express.Router();
 const ApplicationProgress = require("../model/applicationProgress.model");
-const Question = require("../model/question.model");
 const { sendTestEmail } = require("../utils/mailer");
 
-// assign test (generate link) and optionally email
+
 router.post("/generate-links", async (req, res) => {
   try {
     const { jobId, studentId, studentEmail, studentName, sendEmail } = req.body;
@@ -34,7 +33,7 @@ router.post("/generate-links", async (req, res) => {
   }
 });
 
-// optional: verify token -> when user opens /test/:jobId/:studentId/:token
+
 router.get("/verify/:jobId/:studentId/:token", async (req, res) => {
   const { jobId, studentId, token } = req.params;
   const progress = await ApplicationProgress.findOne({ jobId, studentId });

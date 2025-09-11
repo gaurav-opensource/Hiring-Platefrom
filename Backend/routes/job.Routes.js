@@ -8,12 +8,8 @@ const Submission = require("../model/submission.model.js");
 const {
   applyToJob,
   fetchAllJob,
-  getAppliedJobs,
-   updatePipelineStep,
+  updatePipelineStep,
   calculateResumeScore,
-//   shortlistTopByResume,
-//   submitTestScore,
-//   shortlistAfterTest,
   getStudentsByJobId,
   getJobsByHRId,
   evaluateJob
@@ -21,27 +17,21 @@ const {
 } = require('../controller/jobController');
 const ApplicationProgress = require('../model/applicationProgress.model.js');
 
-const {
-  getShuffledQuestions,
-  submitSolution,
-} = require('../controller/testController');
 
 const authenticate = require('../middleware/authMiddleware');
 
-// -------------------- Job Related -------------------- //
 
-// 📌 Apply to a job
 router.post('/apply/:jobId', authenticate, applyToJob);
 router.post('/update/:jobId', authenticate, updatePipelineStep);
 
-// 📌 Fetch all jobs
+
 router.get('/alljob', fetchAllJob);
 router.get('/getjobs',authenticate,getJobsByHRId );
 router.get("/students/:jobId", getStudentsByJobId);
 router.post("/:jobId/resume-screen",calculateResumeScore);
 router.post("/:jobId/evaluate", evaluateJob);
 
-// routes/jobRoutes.js
+
 router.post("/:jobId/select-students", async (req, res) => {
   try {
     const { studentIds } = req.body; // selected student ids
@@ -63,6 +53,7 @@ router.post("/:jobId/select-students", async (req, res) => {
     res.status(500).json({ message: "Error selecting students" });
   }
 });
+
 
 router.post("/:jobId/generate-links", async (req, res) => {
   try {
@@ -134,7 +125,6 @@ router.post("/:jobId/generate-links", async (req, res) => {
 });
 
 
-
 router.post("/:jobId/batch-update-stage", async (req, res) => {
     try {
     const { jobId } = req.params;
@@ -160,9 +150,6 @@ router.post("/:jobId/batch-update-stage", async (req, res) => {
 });
 
 
-
-
-
 router.post("/:jobId/step/:stepIndex", async (req, res) => {
   try {
     const { jobId, stepIndex } = req.params;
@@ -179,7 +166,7 @@ router.post("/:jobId/step/:stepIndex", async (req, res) => {
   }
 });
 
-// POST /api/test/save
+
 router.post("/save", async (req, res) => {
   try {
     const { userId, jobId, questionId, code, language } = req.body;
@@ -221,7 +208,7 @@ router.post("/save", async (req, res) => {
   }
 });
 
-// POST /api/test/submit
+
 router.post("/submit", async (req, res) => {
   try {
   const { userId, jobId } = req.body;
@@ -253,34 +240,42 @@ res.json({ success: true, message: "Final test submitted!" });
 });
 
 
+router.get("/my-applications-stages",authenticate, async (req, res) => {
+  try {
+   
+
+   const userId = req.user.userId;
+
+    // 1️⃣ Find all applications for the user
+    const applications = await ApplicationProgress.find({ userId }).sort({ createdAt: -1 });
+
+    // 2️⃣ Fetch Job details for each application
+    const result = await Promise.all(
+      applications.map(async (app) => {
+        const job = await Job.findById(app.jobId).select("title company location employmentType");
+
+        return {
+          applicationId: app._id,
+          jobId: app.jobId,
+          jobTitle: job?.title || "N/A",
+          company: job?.company || "N/A",
+          location: job?.location || "Remote",
+          employmentType: job?.employmentType || "N/A",
+          currentStage: app.currentStage
+        };
+      })
+    );
+
+    res.json(result);
+
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Server error" });
+  }
+});
 
 
-
-
-
-
-
-// 📌 Update resume scores
-// router.post('/calculate-resume-score/:jobId', auth, calculateResumeScore);
-
-// // 📌 Shortlist top candidates
-// router.post('/shortlist', shortlistTopByResume);
-
-// // 📌 Submit test score
-// router.put('/submit-test/:applicationId', auth, submitTestScore);
-
-// // 📌 Shortlist after test
-// router.post('/shortlist/test', auth, shortlistAfterTest);
-
-// // 📌 Get HR jobs
 router.get('/tracker', authenticate, getJobsByHRId);
 
-// // -------------------- Test Related -------------------- //
-
-// // 📌 Get shuffled questions
-// router.get('/test/:jobId/attempt', auth, getShuffledQuestions);
-
-// // 📌 Submit test solution
-// router.post('/test/:jobId/submit', auth, submitSolution);
 
 module.exports = router;

@@ -1,5 +1,4 @@
-// src/pages/HrProfilePage.jsx
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import axios from "axios";
 import { motion } from "framer-motion";
 import BASE_URL from "../../apiConfig";

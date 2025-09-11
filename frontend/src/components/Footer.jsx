@@ -6,7 +6,6 @@ const Footer = () => {
   return (
     <footer className="bg-gray-900 text-gray-300 py-10 mt-10">
       <div className="max-w-6xl mx-auto px-4 grid grid-cols-1 md:grid-cols-3 gap-8">
-        {/* Brand */}
         <div>
           <h2 className="text-2xl font-bold text-white">HireSmart</h2>
           <p className="mt-3 text-sm">
@@ -14,7 +13,7 @@ const Footer = () => {
           </p>
         </div>
 
-        {/* Quick Links */}
+        
         <div>
           <h3 className="text-lg font-semibold text-white mb-3">Quick Links</h3>
           <ul className="space-y-2">
@@ -24,7 +23,6 @@ const Footer = () => {
           </ul>
         </div>
 
-        {/* Role-specific Links */}
         <div>
           <h3 className="text-lg font-semibold text-white mb-3">Join Us</h3>
           <ul className="space-y-2">
@@ -47,10 +45,8 @@ const Footer = () => {
         </div>
       </div>
 
-      {/* Divider */}
       <div className="border-t border-gray-700 my-6"></div>
 
-      {/* Social & Copyright */}
       <div className="max-w-6xl mx-auto px-4 flex flex-col md:flex-row justify-between items-center text-sm">
         <p>© {new Date().getFullYear()} HireSmart. All rights reserved.</p>
         <div className="flex space-x-5 mt-3 md:mt-0">
