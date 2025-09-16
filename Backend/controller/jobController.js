@@ -40,7 +40,11 @@ const applyToJob = async (req, res) => {
   }
 };
 
-
+// const atsResponse = await axios.post("http://localhost:5002/calculate-score", {
+      //   resumeLink: applicant.resumeLink,
+      //   jobDescription: jobDescriptionText
+      // });
+    //  const atsResponse = 10;
 const getAppliedJobs = async (req, res) => {
   try {
     const {userId} = req.user.userId; 
@@ -74,56 +78,61 @@ const calculateResumeScore = async (req, res) => {
   try {
     const { jobId } = req.params;
 
-    
+    // 1. Check if job exists
     const job = await Job.findById(jobId);
     if (!job) {
       return res.status(404).json({ message: "Job not found" });
     }
 
+    // 2. Find applicants for the job
     const applicants = await ApplicationProgress.find({ jobId });
     if (applicants.length === 0) {
-      return res.status(404).json({ message: "No applicants found for this job" });
+      return res
+        .status(404)
+        .json({ message: "No applicants found for this job" });
     }
 
+    // 3. Build job description text (optional, if you want to use it later)
     let jobDescriptionText = job.description || "";
     if (job.requirements && job.requirements.length > 0) {
-      jobDescriptionText += "\nRequirements: " + job.requirements.join(", ");
+      jobDescriptionText +=
+        "\nRequirements: " + job.requirements.join(", ");
     }
     if (job.responsibilities && job.responsibilities.length > 0) {
-      jobDescriptionText += "\nResponsibilities: " + job.responsibilities.join(", ");
+      jobDescriptionText +=
+        "\nResponsibilities: " + job.responsibilities.join(", ");
     }
+
+    console.log("Processing resume scores...");
 
     const results = [];
 
+    // 4. Iterate over applicants
     for (const applicant of applicants) {
       if (!applicant.resumeLink) continue;
 
-      const atsResponse = await axios.post("http://localhost:5002/calculate-score", {
-        resumeLink: applicant.resumeLink,
-        jobDescription: jobDescriptionText
-      });
-     
+      // For now, fixed dummy score = 10
+      const scoreData = 10;
 
-      const scoreData = atsResponse.data;
-       console.log(scoreData)
-
-      applicant.resumeScore = scoreData.score;
+      // Save the score into applicant
+      applicant.resumeScore = scoreData;
       await applicant.save();
 
+      // Collect result
       results.push({
         userId: applicant.userId,
         name: applicant.name,
         email: applicant.email,
         resumeLink: applicant.resumeLink,
-        score: scoreData.score
+        score: scoreData,
       });
     }
 
+    // 5. Send response
     return res.json({
       message: "Resume scores calculated successfully",
       results,
     });
-
   } catch (error) {
     console.error("Error in calculateResumeScore:", error.message);
     return res.status(500).json({
@@ -132,6 +141,72 @@ const calculateResumeScore = async (req, res) => {
     });
   }
 };
+
+const stageChange = async (req, res) => {
+  try {
+    const { jobId } = req.params;     // from URL
+    const { stage } = req.body;       // from request body
+
+    if (!stage) {
+      return res.status(400).json({ message: "Stage is required" });
+    }
+
+    // Find and update job
+    const job = await Job.findByIdAndUpdate(
+      jobId,
+      { stage },
+      { new: true }   // return updated document
+    );
+
+    if (!job) {
+      return res.status(404).json({ message: "Job not found" });
+    }
+
+    return res.json({
+      message: "Stage updated successfully",
+      job,
+    });
+  } catch (error) {
+    console.error("Error in stageChange:", error.message);
+    return res.status(500).json({
+      message: "Server error",
+      error: error.message,
+    });
+  }
+};
+
+const stageChangeInStudent = async (req, res) => {
+  try {
+    const { jobId } = req.params;             // from URL
+    const { studentIds, stage } = req.body;   // from request body
+
+    if (!studentIds || studentIds.length === 0) {
+      return res.status(400).json({ message: "No student IDs provided" });
+    }
+    if (!stage) {
+      return res.status(400).json({ message: "Stage is required" });
+    }
+
+    // Update all matching ApplicationProgress docs
+    const result = await ApplicationProgress.updateMany(
+      { jobId, userId: { $in: studentIds } },
+      { $set: { stage } }
+    );
+
+    return res.json({
+      message: "Student stages updated successfully",
+      matched: result.matchedCount,
+      modified: result.modifiedCount,
+    });
+  } catch (error) {
+    console.error("Error in stageChangeInStudent:", error.message);
+    return res.status(500).json({
+      message: "Server error",
+      error: error.message,
+    });
+  }
+};
+
 
 const getJobsByHRId = async (req, res) => {
   try {
@@ -359,6 +434,36 @@ const evaluateJob = async (req, res) => {
   }
 };
 
+const sendEmailoftest = async(req,res) =>{
+  
+}
+const enableTestSection = async (req, res) => {
+  try {
+    const { jobId } = req.params;
+
+    const job = await Job.findByIdAndUpdate(
+      jobId,
+      { $set: { testSection: true } },
+      { new: true }
+    );
+
+    if (!job) {
+      return res.status(404).json({ message: "Job not found" });
+    }
+
+    return res.json({
+      message: "Test section enabled successfully",
+      job,
+    });
+  } catch (error) {
+    console.error("Error in enableTestSection:", error.message);
+    return res.status(500).json({
+      message: "Server error",
+      error: error.message,
+    });
+  }
+};
+
 
 module.exports = {
   applyToJob,
@@ -368,5 +473,9 @@ module.exports = {
   getAppliedJobs,
   updatePipelineStep,
   getStudentsByJobId,
-  calculateResumeScore
+  calculateResumeScore,
+  stageChange,
+  stageChangeInStudent,
+  enableTestSection,
+  sendEmailoftest
 }

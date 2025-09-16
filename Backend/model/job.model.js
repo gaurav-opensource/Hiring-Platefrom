@@ -57,11 +57,19 @@ const jobSchema = new mongoose.Schema(
       type: Boolean,
       default: true,
     },
-     currentStep: {
+    testSection :{
+      type: Boolean,
+      default: false,
+    },
+     urrentStep: {
     type: Number,
     default: 0, 
     },
     title: String,
+    testSection:{
+      type:Boolean,
+      default:false,
+    },
     stage: { type: String, enum: ["resume", "profile", "coding", "evaluation", "interview"], default: "resume" },
   },
   { timestamps: true }

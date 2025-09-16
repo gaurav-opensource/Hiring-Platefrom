@@ -1,4 +1,3 @@
-// controllers/applicationController.js
 const Job = require("../models/jobModel");
 const ApplicationTracker = require("../models/applicationTrackerModel");
 const axios = require("axios");

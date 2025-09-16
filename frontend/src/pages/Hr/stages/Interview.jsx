@@ -3,16 +3,14 @@ import axios from "axios";
 
 const BASE_URL = "http://localhost:5000/api";
 
-const Interview = ({ job, onStageUpdate }) => {
-  const [applicants, setApplicants] = useState([]);
+export default function Interview({ job }) {
+  const [students, setStudents] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [processing, setProcessing] = useState(false);
-  const [evaluating, setEvaluating] = useState(false);
 
   useEffect(() => {
     if (!job) return;
 
-    const fetchApplicants = async () => {
+    const fetchInterviewStudents = async () => {
       try {
         setLoading(true);
         const token = localStorage.getItem("token");
@@ -20,120 +18,75 @@ const Interview = ({ job, onStageUpdate }) => {
           headers: { Authorization: `Bearer ${token}` },
         });
 
-       
-        const testCompleted = (res.data || []).filter(
-          (a) => a.testCompleted === true && a.userId
+        const interviewStudents = (res.data || []).filter(
+          (student) => student.currentStage === "interview"
         );
 
-       
-        testCompleted.sort((a, b) => (b.score || 0) - (a.score || 0));
-
-        setApplicants(testCompleted);
+        setStudents(interviewStudents);
       } catch (err) {
-        console.error("Error fetching applicants:", err);
-        alert("Failed to fetch applicants");
+        console.error("Error fetching students:", err);
+        alert("Failed to fetch students.");
       } finally {
         setLoading(false);
       }
     };
 
-    fetchApplicants();
+    fetchInterviewStudents();
   }, [job]);
 
-
-  const handleSelectTopForInterview = async () => {
-    if (applicants.length === 0) return;
-
+  const markAsContacted = async (studentId) => {
     try {
-      setProcessing(true);
       const token = localStorage.getItem("token");
-
-    
-      const topStudent = applicants[0];
-
       await axios.post(
-        `${BASE_URL}/job/${job._id}/promote-interview`,
-        { userId: topStudent.userId._id }, // send userId to backend
+        `${BASE_URL}/students/${studentId}/mark-contacted`,
+        { jobId: job._id }, // ✅ sending jobId along with request
         { headers: { Authorization: `Bearer ${token}` } }
       );
 
- 
-      setApplicants((prev) =>
-        prev.filter((a) => a.userId._id !== topStudent.userId._id)
+      setStudents((prev) =>
+        prev.map((student) =>
+          student._id === studentId
+            ? { ...student, contacted: true }
+            : student
+        )
       );
-
-      if (onStageUpdate)
-        onStageUpdate({ ...job, currentStep: 5 }); 
-
-      alert(`Top student ${topStudent.userId.name} moved to Interview stage!`);
     } catch (err) {
-      console.error("Error promoting student:", err);
-      alert("Failed to promote student");
-    } finally {
-      setProcessing(false);
-    }
-  };
-
-  
-  const handleEvaluateTests = async () => {
-    if (!job) return;
-
-    try {
-      setEvaluating(true);
-      const token = localStorage.getItem("token");
-
-      await axios.post(`${BASE_URL}/job/${job._id}/evaluate`, null, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-
-      alert("✅ Test evaluation completed for all students!");
-    } catch (err) {
-      console.error("Error evaluating tests:", err);
-      alert("Failed to evaluate tests");
-    } finally {
-      setEvaluating(false);
+      console.error("Error marking student as contacted:", err);
+      alert("Failed to mark as contacted.");
     }
   };
 
   return (
-    <div>
-      <h3 className="text-xl font-bold mb-4">Interview Stage</h3>
-
-      <div className="mb-4 flex gap-3">
-        <button
-          onClick={handleEvaluateTests}
-          disabled={evaluating}
-          className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:bg-gray-400"
-        >
-          {evaluating ? "Evaluating..." : "Run Test Evaluation"}
-        </button>
-
-        <button
-          onClick={handleSelectTopForInterview}
-          disabled={processing || applicants.length === 0}
-          className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 disabled:bg-gray-400"
-        >
-          {processing ? "Processing..." : "Select Top for Interview"}
-        </button>
-      </div>
+    <div className="max-w-4xl mx-auto p-4">
+      <h2 className="text-2xl font-bold mb-4">Interview Students</h2>
 
       {loading ? (
-        <p>⏳ Loading applicants...</p>
-      ) : applicants.length === 0 ? (
-        <p>No applicants ready for interview.</p>
+        <p>Loading students...</p>
+      ) : students.length === 0 ? (
+        <p>No students are at the interview stage.</p>
       ) : (
-        <ul className="space-y-3 mb-4">
-          {applicants.map((student) => (
+        <ul className="space-y-4">
+          {students.map((student) => (
             <li
-              key={student.userId?._id}
-              className="p-3 border rounded bg-gray-50 flex justify-between items-center"
+              key={student._id}
+              className="border p-4 rounded bg-gray-50 shadow-sm flex justify-between items-center"
             >
               <div>
-                <p className="font-medium">{student.userId?.name || "No Name"}</p>
-                <p className="text-sm text-gray-600">{student.userId?.email || "No Email"}</p>
-                <p className="text-sm text-gray-700">
-                  Test Score: {student.score ?? "N/A"}
-                </p>
+                <p className="font-medium text-lg">{student.userId?.name}</p>
+                <p className="text-sm text-gray-600">📧 {student.userId?.email}</p>
+                <p className="text-sm text-gray-600">Score: {student.testScore}</p>
+              </div>
+              <div>
+                {student.contacted ? (
+                  <span className="text-green-600 font-semibold">Contacted</span>
+                ) : (
+                  <button
+                    onClick={() => markAsContacted(student._id)}
+                    className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+                  >
+                    Mark as Contacted
+                  </button>
+                )}
               </div>
             </li>
           ))}
@@ -141,6 +94,4 @@ const Interview = ({ job, onStageUpdate }) => {
       )}
     </div>
   );
-};
-
-export default Interview;
+}

@@ -1,14 +1,13 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import axios from "axios";
 
 const BASE_URL = "http://localhost:5000/api";
 
-const ResumeScreening = ({ job, currentStageIndex = 0, onStageUpdate }) => {
+const ResumeScreening = ({ job }) => {
   const [applicants, setApplicants] = useState([]);
   const [loadingApplicants, setLoadingApplicants] = useState(false);
   const [processing, setProcessing] = useState(false);
 
- 
   useEffect(() => {
     if (!job) return;
 
@@ -31,32 +30,34 @@ const ResumeScreening = ({ job, currentStageIndex = 0, onStageUpdate }) => {
     fetchApplicants();
   }, [job]);
 
-
   const handleProcessResumes = async () => {
     if (!job) return;
     setProcessing(true);
     try {
       const token = localStorage.getItem("token");
 
+      // ✅ First API call: Resume Screening
       await axios.post(
         `${BASE_URL}/job/${job._id}/resume-screen`,
-        {},
+        {}, // Empty body or necessary data
         { headers: { Authorization: `Bearer ${token}` } }
       );
 
-     
-      const res = await axios.post(
-        `${BASE_URL}/job/${job._id}/step/${currentStageIndex + 1}`,
-        {},
+     // ✅ Second API call: Update job stage
+      await axios.post(
+        `${BASE_URL}/job/${job._id}/stageChange`,
+        { stage: "profile" },
         { headers: { Authorization: `Bearer ${token}` } }
       );
 
-      
-      if (onStageUpdate && res.data.updatedJob) {
-        onStageUpdate(res.data.updatedJob);
-      }
+      // ✅ Third API call: Update each student’s stage in their application tracker
+      // await axios.post(
+      //   `${BASE_URL}/job/${job._id}/stageChangeInStudent`,
+      //   { stage: "profile" },
+      //   { headers: { Authorization: `Bearer ${token}` } }
+      // );
 
-      alert("Resume screening completed and step updated!");
+      alert("Resume screening completed and stage updated!");
     } catch (err) {
       console.error("Error processing resumes:", err);
       alert("Failed to process resumes.");
@@ -70,7 +71,9 @@ const ResumeScreening = ({ job, currentStageIndex = 0, onStageUpdate }) => {
       <h3 className="text-xl font-bold mb-4">Resume Screening</h3>
       {job ? (
         <>
-          <p>Processing resumes for job: <strong>{job.title}</strong></p>
+          <p>
+            Processing resumes for job: <strong>{job.title}</strong>
+          </p>
 
           <button
             onClick={handleProcessResumes}
@@ -80,7 +83,6 @@ const ResumeScreening = ({ job, currentStageIndex = 0, onStageUpdate }) => {
             {processing ? "Processing..." : "Process Resumes"}
           </button>
 
-        
           <div className="mt-4">
             <h4 className="text-lg font-semibold mb-2">Applicants:</h4>
             {loadingApplicants ? (

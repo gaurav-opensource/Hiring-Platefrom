@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useSearchParams } from "react-router-dom";
 import axios from "axios";
-import Editor from "@monaco-editor/react"; // make sure you installed monaco-editor
+import Editor from "@monaco-editor/react";
 
 // Backend + Judge0 API
 const API = "http://localhost:5000/api";
@@ -49,17 +49,41 @@ const languages = [
 
 const TextCodeEditorPage = () => {
   const { jobId, userId } = useParams();
-  console.log(userId)
+  const [searchParams] = useSearchParams();
 
+  const startTime = new Date(searchParams.get("start"));
+  const endTime = new Date(searchParams.get("end"));
+
+  const [currentTime, setCurrentTime] = useState(new Date());
+  const [isLocked, setIsLocked] = useState(true);
 
   const [questions, setQuestions] = useState([]);
   const [answers, setAnswers] = useState({});
   const [loading, setLoading] = useState(true);
   const [currentIndex, setCurrentIndex] = useState(0);
-
   const [selectedLanguage, setSelectedLanguage] = useState(languages[0]);
   const [testResults, setTestResults] = useState(null);
   const [isExecuting, setIsExecuting] = useState(false);
+
+  // ✅ Timer logic to update current time
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentTime(new Date());
+    }, 1000);
+    return () => clearInterval(interval);
+  }, []);
+
+  // ✅ Lock/unlock test based on time
+  useEffect(() => {
+    if (currentTime >= startTime && currentTime <= endTime) {
+      setIsLocked(false);
+    } else if (currentTime > endTime) {
+      setIsLocked(true);
+      handleSubmit();
+    } else {
+      setIsLocked(true);
+    }
+  }, [currentTime, startTime, endTime]);
 
   // ✅ Fetch questions
   useEffect(() => {
@@ -77,7 +101,7 @@ const TextCodeEditorPage = () => {
     fetchQuestions();
   }, [jobId]);
 
-  // ✅ Set starter code for currentQ if not answered yet
+  // ✅ Initialize code answers
   useEffect(() => {
     if (questions.length > 0) {
       const currentQId = questions[currentIndex]._id;
@@ -94,11 +118,10 @@ const TextCodeEditorPage = () => {
     setAnswers((prev) => ({ ...prev, [qId]: code }));
   };
 
-  // ✅ Run Code
   const handleRunCode = async () => {
     const currentQ = questions[currentIndex];
     if (!currentQ || !currentQ.testCases || currentQ.testCases.length === 0) {
-      alert("No test cases available for this question.");
+      alert("No test cases available.");
       return;
     }
 
@@ -148,7 +171,7 @@ const TextCodeEditorPage = () => {
       }
       setTestResults(results);
     } catch (err) {
-      console.error("Error running code with Judge0:", err);
+      console.error("Error running code:", err);
       setTestResults([
         {
           passed: false,
@@ -162,7 +185,6 @@ const TextCodeEditorPage = () => {
     }
   };
 
-  // ✅ Save code per question
   const handleSave = async (qId) => {
     try {
       await axios.post(`${API}/job/save`, {
@@ -177,11 +199,10 @@ const TextCodeEditorPage = () => {
     }
   };
 
-  // ✅ Final Submit
   const handleSubmit = async () => {
     try {
       const currentQ = questions[currentIndex];
-      await handleSave(currentQ._id); // save last Q also
+      await handleSave(currentQ._id);
       await axios.post(`${API}/job/submit`, { userId, jobId });
       alert("✅ Test submitted successfully!");
     } catch (err) {
@@ -195,29 +216,28 @@ const TextCodeEditorPage = () => {
 
   const currentQ = questions[currentIndex];
 
+  // ✅ Display messages if locked
+  if (isLocked && currentTime < startTime) {
+    return <p className="p-6 text-red-600">⏳ Test has not started yet. It will start at {startTime.toLocaleString()}</p>;
+  }
+
+  if (isLocked && currentTime > endTime) {
+    return <p className="p-6 text-red-600">❌ Test has ended. Your answers are submitted.</p>;
+  }
+
   return (
     <div className="flex h-screen">
-      {/* LEFT PANEL - Question */}
       <div className="w-1/2 border-r overflow-y-auto p-6 bg-gray-50">
         <h1 className="text-2xl font-bold mb-4">{currentQ.title}</h1>
-        <p className="whitespace-pre-line text-gray-800 mb-6">
-          {currentQ.description}
-        </p>
+        <p className="whitespace-pre-line text-gray-800 mb-6">{currentQ.description}</p>
 
         {currentQ.testCases.length > 0 ? (
           <div className="mb-6">
             <h2 className="font-semibold mb-2">Examples:</h2>
             {currentQ.testCases.map((tc, idx) => (
-              <div
-                key={idx}
-                className="bg-gray-100 p-2 rounded mb-2 text-sm font-mono"
-              >
-                <p>
-                  <strong>Input:</strong> {tc.input}
-                </p>
-                <p>
-                  <strong>Output:</strong> {tc.output}
-                </p>
+              <div key={idx} className="bg-gray-100 p-2 rounded mb-2 text-sm font-mono">
+                <p><strong>Input:</strong> {tc.input}</p>
+                <p><strong>Output:</strong> {tc.output}</p>
               </div>
             ))}
           </div>
@@ -227,35 +247,34 @@ const TextCodeEditorPage = () => {
         <p className="text-sm text-gray-500">Marks: {currentQ.marks}</p>
       </div>
 
-      {/* RIGHT PANEL - Monaco Editor */}
       <div className="w-1/2 flex flex-col">
-        {/* Language Selector */}
-        <div className="p-4 border-b bg-gray-100 flex items-center">
-          <label htmlFor="language-select" className="mr-2 font-medium">
-            Language:
-          </label>
-          <select
-            id="language-select"
-            value={selectedLanguage.name}
-            onChange={(e) => {
-              const lang = languages.find((l) => l.name === e.target.value);
-              setSelectedLanguage(lang);
-              setAnswers((prev) => ({
-                ...prev,
-                [currentQ._id]: lang.starterCode,
-              }));
-            }}
-            className="p-2 border rounded"
-          >
-            {languages.map((lang) => (
-              <option key={lang.id} value={lang.name}>
-                {lang.name}
-              </option>
-            ))}
-          </select>
+        <div className="p-4 border-b bg-gray-100 flex items-center justify-between">
+          <div>
+            <label htmlFor="language-select" className="mr-2 font-medium">Language:</label>
+            <select
+              id="language-select"
+              value={selectedLanguage.name}
+              onChange={(e) => {
+                const lang = languages.find((l) => l.name === e.target.value);
+                setSelectedLanguage(lang);
+                setAnswers((prev) => ({
+                  ...prev,
+                  [currentQ._id]: lang.starterCode,
+                }));
+              }}
+              className="p-2 border rounded"
+            >
+              {languages.map((lang) => (
+                <option key={lang.id} value={lang.name}>{lang.name}</option>
+              ))}
+            </select>
+          </div>
+          <div className="text-sm font-semibold">
+            {currentTime < startTime && <>Starts in: {Math.max(0, Math.floor((startTime - currentTime) / 1000))}s</>}
+            {currentTime >= startTime && currentTime <= endTime && <>Time left: {Math.max(0, Math.floor((endTime - currentTime) / 1000))}s</>}
+          </div>
         </div>
 
-        {/* Code Editor */}
         <div className="flex-1 p-4">
           <Editor
             height="100%"
@@ -272,31 +291,16 @@ const TextCodeEditorPage = () => {
           />
         </div>
 
-        {/* Test Results */}
         {testResults && (
           <div className="p-4 border-t bg-gray-200 overflow-y-auto max-h-48">
             <h3 className="font-bold mb-2">Test Results:</h3>
             <ul className="list-none p-0 m-0">
               {testResults.map((result, index) => (
-                <li
-                  key={index}
-                  className={`p-2 rounded mb-2 ${
-                    result.passed ? "bg-green-100" : "bg-red-100"
-                  }`}
-                >
-                  <p className="font-mono text-sm">
-                    Test Case {index + 1}:{" "}
-                    {result.passed
-                      ? "✅ Passed"
-                      : `❌ Failed (${result.status})`}
-                  </p>
-                  <p className="text-xs text-gray-700">
-                    Time: {result.time}s, Memory: {result.memory} KB
-                  </p>
+                <li key={index} className={`p-2 rounded mb-2 ${result.passed ? "bg-green-100" : "bg-red-100"}`}>
+                  <p className="font-mono text-sm">Test Case {index + 1}: {result.passed ? "✅ Passed" : `❌ Failed (${result.status})`}</p>
+                  <p className="text-xs text-gray-700">Time: {result.time}s, Memory: {result.memory} KB</p>
                   {result.compileError && (
-                    <pre className="mt-2 p-2 bg-red-200 text-red-800 rounded whitespace-pre-wrap text-xs">
-                      {result.compileError}
-                    </pre>
+                    <pre className="mt-2 p-2 bg-red-200 text-red-800 rounded whitespace-pre-wrap text-xs">{result.compileError}</pre>
                   )}
                   {!result.passed && !result.compileError && (
                     <div className="text-xs text-red-800 mt-1">
@@ -310,16 +314,11 @@ const TextCodeEditorPage = () => {
           </div>
         )}
 
-        {/* Navigation */}
         <div className="flex justify-between p-4 border-t bg-gray-100">
           <button
             disabled={currentIndex === 0 || isExecuting}
             onClick={() => setCurrentIndex((prev) => prev - 1)}
-            className={`px-4 py-2 rounded ${
-              currentIndex === 0 || isExecuting
-                ? "bg-gray-300 text-gray-500 cursor-not-allowed"
-                : "bg-gray-600 text-white hover:bg-gray-700"
-            }`}
+            className={`px-4 py-2 rounded ${currentIndex === 0 || isExecuting ? "bg-gray-300 text-gray-500 cursor-not-allowed" : "bg-gray-600 text-white hover:bg-gray-700"}`}
           >
             Previous
           </button>
@@ -327,12 +326,8 @@ const TextCodeEditorPage = () => {
           <div className="flex space-x-2">
             <button
               onClick={handleRunCode}
-              disabled={isExecuting}
-              className={`px-4 py-2 rounded ${
-                isExecuting
-                  ? "bg-yellow-300"
-                  : "bg-yellow-500 text-white hover:bg-yellow-600"
-              }`}
+              disabled={isExecuting || isLocked}
+              className={`px-4 py-2 rounded ${isExecuting ? "bg-yellow-300" : "bg-yellow-500 text-white hover:bg-yellow-600"}`}
             >
               {isExecuting ? "Executing..." : "Run Code"}
             </button>
@@ -341,11 +336,11 @@ const TextCodeEditorPage = () => {
               <button
                 onClick={async () => {
                   const currentQ = questions[currentIndex];
-                  await handleSave(currentQ._id); // 🔹 save before next
+                  await handleSave(currentQ._id);
                   setCurrentIndex((prev) => prev + 1);
                   setTestResults(null);
                 }}
-                disabled={isExecuting}
+                disabled={isExecuting || isLocked}
                 className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
               >
                 Next
@@ -353,7 +348,7 @@ const TextCodeEditorPage = () => {
             ) : (
               <button
                 onClick={handleSubmit}
-                disabled={isExecuting}
+                disabled={isExecuting || isLocked}
                 className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700"
               >
                 Submit Test

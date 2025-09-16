@@ -12,10 +12,15 @@ const {
   calculateResumeScore,
   getStudentsByJobId,
   getJobsByHRId,
-  evaluateJob
+  evaluateJob,
+  stageChange,
+  stageChangeInStudent,
+  enableTestSection,
+  sendEmailoftest
  
 } = require('../controller/jobController');
 const ApplicationProgress = require('../model/applicationProgress.model.js');
+const { sendEmail } = require('../config/emailConfig');
 
 
 const authenticate = require('../middleware/authMiddleware');
@@ -23,6 +28,10 @@ const authenticate = require('../middleware/authMiddleware');
 
 router.post('/apply/:jobId', authenticate, applyToJob);
 router.post('/update/:jobId', authenticate, updatePipelineStep);
+router.post('/:jobId/stageChange', authenticate, stageChange);
+router.post("/:jobId/stageChangeInStudent",authenticate, stageChangeInStudent);
+router.post("/change/:jobId", enableTestSection);
+router.post("/send-email/:jobId",  sendEmailoftest);
 
 
 router.get('/alljob', fetchAllJob);
@@ -273,6 +282,54 @@ router.get("/my-applications-stages",authenticate, async (req, res) => {
     res.status(500).json({ message: "Server error" });
   }
 });
+
+router.post("/:jobId/send-test-email", async (req, res) => {
+  try {
+    const { jobId } = req.params;
+    const { description, startTime, endTime } = req.body;
+
+    // 1. Check if job exists
+    const job = await Job.findById(jobId);
+    if (!job) {
+      return res.status(404).json({ message: "Job not found" });
+    }
+
+    // 2. Get all applicants in stage "test"
+    const applicants = await ApplicationProgress.find({ jobId, currentStage: "test" })
+      .populate("userId"); // populate to get user info like name, email
+
+    if (!applicants || applicants.length === 0) {
+      return res.status(404).json({ message: "No applicants found in test stage" });
+    }
+
+    // 3. Send email to each applicant
+    for (const applicant of applicants) {
+      const testLink = `${process.env.APP_BASE_URL}/test/${applicant.userId._id}/${job._id}?start=${encodeURIComponent(
+        startTime
+      )}&end=${encodeURIComponent(endTime)}`;
+
+      await sendEmail({
+        to: applicant.userId.email,
+        subject: `Coding Test Invitation for ${job.title}`,
+        html: `
+          <p>Dear <strong>${applicant.userId.name}</strong>,</p>
+          <p>${description}</p>
+          <p><strong>Test Window:</strong> ${new Date(startTime).toLocaleString()} - ${new Date(endTime).toLocaleString()}</p>
+          <p>You can access your test using the link below:</p>
+          <p><a href="${testLink}" style="color: #1a73e8; font-weight: bold;">Start Test</a></p>
+          <br/>
+          <p>Best regards,<br/>The Hiring Team</p>
+        `,
+      });
+    }
+
+    return res.json({ message: "Test emails sent successfully!" });
+  } catch (error) {
+    console.error("Error sending test emails:", error);
+    return res.status(500).json({ message: "Server error", error: error.message });
+  }
+});
+
 
 
 router.get('/tracker', authenticate, getJobsByHRId);

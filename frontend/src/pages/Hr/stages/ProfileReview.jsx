@@ -1,15 +1,15 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import axios from "axios";
 
 const BASE_URL = "http://localhost:5000/api";
 
-const ProfileReview = ({ job, currentStageIndex = 1, onStageUpdate }) => {
+const ResumeScreening = ({ job }) => {
   const [applicants, setApplicants] = useState([]);
   const [loadingApplicants, setLoadingApplicants] = useState(false);
   const [processing, setProcessing] = useState(false);
-  const [selectedApplicants, setSelectedApplicants] = useState([]);
+  const [selectedStudents, setSelectedStudents] = useState([]);
+  const [selectCount, setSelectCount] = useState(0);
 
- 
   useEffect(() => {
     if (!job) return;
 
@@ -21,9 +21,11 @@ const ProfileReview = ({ job, currentStageIndex = 1, onStageUpdate }) => {
           headers: { Authorization: `Bearer ${token}` },
         });
 
+        // ✅ Sort applicants by resumeScore in descending order
         const sortedApplicants = (res.data || []).sort(
           (a, b) => b.resumeScore - a.resumeScore
         );
+
         setApplicants(sortedApplicants);
       } catch (err) {
         console.error("Error fetching applicants:", err);
@@ -36,95 +38,113 @@ const ProfileReview = ({ job, currentStageIndex = 1, onStageUpdate }) => {
     fetchApplicants();
   }, [job]);
 
+  const handleSelectTopStudents = () => {
+    const topStudents = applicants.slice(0, selectCount).map((s) => s._id);
+    setSelectedStudents(topStudents);
+  };
 
-  const toggleSelectApplicant = (studentId) => {
-    setSelectedApplicants((prev) =>
+  const handleToggleStudent = (studentId) => {
+    setSelectedStudents((prev) =>
       prev.includes(studentId)
         ? prev.filter((id) => id !== studentId)
         : [...prev, studentId]
     );
   };
 
+  const handleConfirmSelection = async () => {
+    if (!job || selectedStudents.length === 0) {
+      alert("Please select at least one student.");
+      return;
+    }
 
-  const handleProcessSelected = async () => {
-    if (!job || selectedApplicants.length === 0) return;
     setProcessing(true);
     try {
       const token = localStorage.getItem("token");
 
-
+      // ✅ Update job stage
       await axios.post(
-        `${BASE_URL}/job/${job._id}/batch-update-stage`,
-        {
-          studentIds: selectedApplicants,
-          stage: "test",
-        },
+        `${BASE_URL}/job/${job._id}/stageChange`,
+        { stage: "coding" },
         { headers: { Authorization: `Bearer ${token}` } }
       );
 
-      
-      setApplicants((prev) =>
-        prev.map((s) =>
-          selectedApplicants.includes(s._id)
-            ? { ...s, currentStage: "test" }
-            : s
-        )
+      // ✅ Update selected students' stages
+      await axios.post(
+        `${BASE_URL}/job/${job._id}/stageChangeInStudent`,
+        { studentIds: selectedStudents, stage: "coding" },
+        { headers: { Authorization: `Bearer ${token}` } }
       );
 
-      
-      setSelectedApplicants([]);
-
-     
-      if (onStageUpdate) onStageUpdate({ ...job, currentStep: currentStageIndex + 1 });
-
-      alert("Selected applicants moved to Test stage!");
+      alert("Selection confirmed and stages updated!");
+      setSelectedStudents([]);
     } catch (err) {
-      console.error("Error processing selected applicants:", err);
-      alert("Failed to update selected applicants");
+      console.error("Error confirming selection:", err);
+      alert("Failed to update stages.");
     } finally {
       setProcessing(false);
     }
   };
 
   return (
-    <div>
-      <h3 className="text-xl font-bold mb-4">Profile Review</h3>
+    <div className="p-4">
+      <h3 className="text-xl font-bold mb-4">Resume Screening</h3>
       {job ? (
         <>
-          {loadingApplicants ? (
-            <p>⏳ Loading applicants...</p>
-          ) : applicants.length === 0 ? (
-            <p>No applicants found.</p>
-          ) : (
-            <div className="space-y-3 mt-4">
-              {applicants.map((student) => (
-                <div
-                  key={student._id}
-                  className="p-3 border rounded bg-gray-50 flex justify-between items-center"
-                >
-                  <div>
-                    <p className="font-medium">{student.userId?.name}</p>
-                    <p className="text-sm text-gray-600">📧 {student.userId?.email}</p>
-                    <p className="text-sm text-gray-700">Score: {student.resumeScore}</p>
-                    <p className="text-sm text-gray-700">Stage: {student.currentStage}</p>
-                  </div>
-                  <input
-                    type="checkbox"
-                    checked={selectedApplicants.includes(student._id)}
-                    onChange={() => toggleSelectApplicant(student._id)}
-                    disabled={student.currentStage !== "resume"} // only resume stage
-                  />
-                </div>
-              ))}
-            </div>
-          )}
+          <p>Total Applicants: <strong>{applicants.length}</strong></p>
+
+          <div className="mb-4">
+            <input
+              type="number"
+              min="1"
+              max={applicants.length}
+              value={selectCount}
+              onChange={(e) => setSelectCount(Number(e.target.value))}
+              placeholder="Enter number of students to select"
+              className="border p-1 mr-2"
+            />
+            <button
+              onClick={handleSelectTopStudents}
+              className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700"
+            >
+              Select Top Students
+            </button>
+          </div>
+
+          <div>
+            <h4 className="text-lg font-semibold mb-2">Or select manually:</h4>
+            {loadingApplicants ? (
+              <p>⏳ Loading applicants...</p>
+            ) : applicants.length === 0 ? (
+              <p>No applicants found.</p>
+            ) : (
+              <ul className="space-y-2 max-h-64 overflow-auto">
+                {applicants.map((student) => (
+                  <li
+                    key={student._id}
+                    className="flex items-center space-x-2 p-2 border rounded bg-gray-50"
+                  >
+                    <input
+                      type="checkbox"
+                      checked={selectedStudents.includes(student._id)}
+                      onChange={() => handleToggleStudent(student._id)}
+                    />
+                    <div>
+                      <p className="font-medium">{student.userId?.name}</p>
+                      <p className="text-sm text-gray-600">📧 {student.userId?.email}</p>
+                      <p className="text-sm text-gray-700">Score: {student.resumeScore}</p>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
 
           <button
-            onClick={handleProcessSelected}
-            disabled={processing || selectedApplicants.length === 0}
+            onClick={handleConfirmSelection}
+            disabled={processing || selectedStudents.length === 0}
             className="mt-4 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:bg-gray-400"
           >
-            {processing ? "Processing..." : "Process Selected Applicants"}
+            {processing ? "Processing..." : "Confirm Selection"}
           </button>
         </>
       ) : (
@@ -134,4 +154,4 @@ const ProfileReview = ({ job, currentStageIndex = 1, onStageUpdate }) => {
   );
 };
 
-export default ProfileReview;
+export default ResumeScreening;

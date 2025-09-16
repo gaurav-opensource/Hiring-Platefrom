@@ -1,9 +1,7 @@
 import axios from "axios";
-import { useState} from "react";
+import { useState } from "react";
 
-
-export default function HRCreateQuestion() {
-  const jobId = '68ac47aa7d8fc514745289f7';
+export default function HRCreateQuestion({ jobId }) {
   const [title, setTitle] = useState("");
   const [desc, setDesc] = useState("");
   const [marks, setMarks] = useState(100);
@@ -19,27 +17,34 @@ export default function HRCreateQuestion() {
   };
 
   const handleSubmit = async () => {
-    if (!jobId) return alert("JobId missing from URL!");
-    const payload = { jobId, title, description: desc, marks, testCases };
-    try {
-      const res = await axios.post("http://localhost:5000/api/questions/create", payload);
-      alert("Question created: " + res.data._id);
-    } catch (err) {
-      alert("Error: " + err.message);
-    }
-  };
+  if (!jobId) return alert("JobId missing!");
+  const payload = { jobId, title, description: desc, marks, testCases };
+
+  try {
+    // Step 1: Create the question
+    const res = await axios.post(
+      "http://localhost:5000/api/questions/create",
+      payload
+    );
+
+    // Step 2: Update the job -> set testSection true
+    await axios.post(`http://localhost:5000/api/job/change/${jobId}`, {
+      testSection: true,
+    });
+
+    alert("Question created: " + res.data._id);
+  } catch (err) {
+    alert("Error: " + err.message);
+  }
+};
+
 
   return (
     <div className="max-w-3xl mx-auto bg-white shadow-lg rounded-2xl p-6 mt-6">
-      <h2 className="text-2xl font-bold text-gray-800 mb-4">
-        HR - Create Question
-      </h2>
+      <h2 className="text-2xl font-bold text-gray-800 mb-4">HR - Create Question</h2>
 
-     
       <div className="mb-4">
-        <label className="block text-sm font-medium text-gray-700">
-          Job ID (from URL)
-        </label>
+        <label className="block text-sm font-medium text-gray-700">Job ID</label>
         <input
           className="w-full border border-gray-300 rounded-lg p-2 mt-1 bg-gray-100"
           value={jobId || ""}
@@ -47,7 +52,6 @@ export default function HRCreateQuestion() {
         />
       </div>
 
-      
       <div className="mb-4">
         <label className="block text-sm font-medium text-gray-700">Title</label>
         <input
@@ -57,7 +61,6 @@ export default function HRCreateQuestion() {
         />
       </div>
 
-  
       <div className="mb-4">
         <label className="block text-sm font-medium text-gray-700">Description</label>
         <textarea
@@ -67,7 +70,6 @@ export default function HRCreateQuestion() {
         />
       </div>
 
-      
       <div className="mb-4">
         <label className="block text-sm font-medium text-gray-700">Marks</label>
         <input
@@ -78,7 +80,6 @@ export default function HRCreateQuestion() {
         />
       </div>
 
-     
       <h4 className="text-lg font-semibold text-gray-800 mb-2">Test Cases</h4>
       {testCases.map((tc, i) => (
         <div key={i} className="border border-gray-200 rounded-xl p-4 mb-3 bg-gray-50 shadow-sm">
@@ -114,12 +115,12 @@ export default function HRCreateQuestion() {
 
       <button
         onClick={addTC}
-        className="bg-green-500 text-white px-4 py-2 rounded-xl shadow hover:bg-green-600 transition"
+        className="bg-green-500 text-white px-4 py-2 rounded-xl shadow hover:bg-green-600 transition mb-4"
       >
+        Add Test Case
       </button>
 
-     
-      <div className="mt-6">
+      <div>
         <button
           onClick={handleSubmit}
           className="bg-blue-600 text-white px-6 py-2 rounded-xl shadow hover:bg-blue-700 transition"

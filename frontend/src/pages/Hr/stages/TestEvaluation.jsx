@@ -1,96 +1,141 @@
-import React, { useState } from "react";
+import { useEffect, useState } from "react";
 import axios from "axios";
 
 const BASE_URL = "http://localhost:5000/api";
 
-const TestEvaluation = ({ job }) => {
+export default function TestEvaluation({ job }) {
+  const [allSubmitted, setAllSubmitted] = useState(false);
+  const [students, setStudents] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [links, setLinks] = useState([]);
-  const [hrEmail, setHrEmail] = useState(""); 
+  const [selectCount, setSelectCount] = useState(0);
+  const [selectedStudents, setSelectedStudents] = useState([]);
 
-  const handleGenerateLinks = async () => {
+  useEffect(() => {
     if (!job) return;
-    if (!hrEmail) return alert("Please enter HR email");
+    setAllSubmitted(job.allStudentTestSubmit || false);
+    if (job.allStudentTestSubmit) {
+      fetchStudents();
+    }
+  }, [job]);
 
+  const fetchStudents = async () => {
     try {
       setLoading(true);
       const token = localStorage.getItem("token");
-
-      const res = await axios.post(
-        `${BASE_URL}/job/${job._id}/generate-links`,
-        { email: hrEmail }, 
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
-      );
-
-      setLinks(res.data.links || []);
-      alert("Test links generated and emailed successfully!");
+      const res = await axios.get(`${BASE_URL}/job/students/${job._id}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const sorted = res.data.sort((a, b) => b.testScore - a.testScore);
+      setStudents(sorted);
     } catch (err) {
-      console.error("Error generating test links:", err);
-      alert(err.response?.data?.message || "Failed to generate test links");
+      console.error("Error fetching students:", err);
+      alert("Failed to fetch students.");
     } finally {
       setLoading(false);
     }
   };
 
+  const handleSelectTop = () => {
+    const top = students.slice(0, selectCount).map((s) => s._id);
+    setSelectedStudents(top);
+  };
+
+  const handleToggleStudent = (id) => {
+    setSelectedStudents((prev) =>
+      prev.includes(id) ? prev.filter((sid) => sid !== id) : [...prev, id]
+    );
+  };
+
+  const handleConfirmSelection = async () => {
+    if (selectedStudents.length === 0) {
+      alert("Please select at least one student.");
+      return;
+    }
+    try {
+      const token = localStorage.getItem("token");
+
+      // ✅ Update job stage to interview
+      await axios.post(
+        `${BASE_URL}/job/${job._id}/stageChange`,
+        { stage: "interview" },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+
+      // ✅ Update selected students' stage to interview
+      await axios.post(
+        `${BASE_URL}/job/${job._id}/stageChangeInStudent`,
+        { studentIds: selectedStudents, stage: "interview" },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+
+      alert("Interview stage updated for selected students.");
+    } catch (err) {
+      console.error("Error updating stages:", err);
+      alert("Failed to update stages.");
+    }
+  };
+
   return (
-    <div>
-      <h3 className="text-xl font-bold mb-4">Test Evaluation</h3>
+    <div className="max-w-4xl mx-auto p-4">
+      <h2 className="text-2xl font-bold mb-4">Test Evaluation</h2>
 
-      {job ? (
-        <>
-          <p>
-            Evaluating test results for job: <strong>{job.title}</strong>
-          </p>
+      {!allSubmitted ? (
+        <div className="bg-yellow-100 p-4 rounded">
+          <p>Test not completed yet by all students.</p>
+        </div>
+      ) : (
+        <div>
+          <p>Total Students: {students.length}</p>
 
-        
-          <div className="mb-4">
-            <label className="block mb-1 font-medium">HR Email:</label>
+          <div className="my-4">
             <input
-              type="email"
-              value={hrEmail}
-              onChange={(e) => setHrEmail(e.target.value)}
-              placeholder="Enter HR email"
-              className="border px-3 py-2 w-full rounded"
+              type="number"
+              min="1"
+              max={students.length}
+              value={selectCount}
+              onChange={(e) => setSelectCount(Number(e.target.value))}
+              placeholder="Enter number of top students to select"
+              className="border p-2 mr-2"
             />
+            <button
+              onClick={handleSelectTop}
+              className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700"
+            >
+              Select Top Students
+            </button>
           </div>
 
-          <button
-            onClick={handleGenerateLinks}
-            disabled={loading}
-            className="mt-2 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:bg-gray-400"
-          >
-            {loading ? "Generating Links..." : "Generate Test Links & Send Email"}
-          </button>
-
-        
-          {links.length > 0 && (
-            <div className="mt-4">
-              <h4 className="font-semibold mb-2">Generated Links:</h4>
-              <ul className="list-disc pl-5 space-y-1">
-                {links.map((link) => (
-                  <li key={link.userId}>
-                    {link.userId}:{" "}
-                    <a
-                      href={link.testLink}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="text-blue-700 underline"
-                    >
-                      {link.testLink}
-                    </a>
+          <div className="my-4">
+            <h3 className="text-lg font-semibold mb-2">Select Students Manually:</h3>
+            {loading ? (
+              <p>Loading students...</p>
+            ) : (
+              <ul className="max-h-64 overflow-auto border p-2 rounded space-y-2">
+                {students.map((student) => (
+                  <li key={student._id} className="flex items-center gap-2">
+                    <input
+                      type="checkbox"
+                      checked={selectedStudents.includes(student._id)}
+                      onChange={() => handleToggleStudent(student._id)}
+                    />
+                    <div>
+                      <p>{student.userId?.name}</p>
+                      <p className="text-sm text-gray-600">Score: {student.testScore}</p>
+                    </div>
                   </li>
                 ))}
               </ul>
-            </div>
-          )}
-        </>
-      ) : (
-        <p>No job selected.</p>
+            )}
+          </div>
+
+          <button
+            onClick={handleConfirmSelection}
+            className="bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700"
+          >
+            Confirm Selection & Update Stage
+          </button>
+        </div>
       )}
     </div>
   );
-};
-
-export default TestEvaluation;
+}
