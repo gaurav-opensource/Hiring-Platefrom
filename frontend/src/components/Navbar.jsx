@@ -1,10 +1,11 @@
 import { Link } from "react-router-dom";
+import Logo from "../../src/assets/logo.png";
 
 export default function Navbar() {
   return (
     <nav className="flex justify-between items-center px-8 py-4 shadow-sm bg-white">
       <div className="flex items-center space-x-2">
-        <img src="/logo.png" alt="WorkFinder Logo" className="w-6 h-6" />
+        <img src={Logo} alt="WorkFinder Logo" className="w-6 h-6" />
         <span className="text-xl font-bold text-gray-800">WorkFinder</span>
       </div>
 
