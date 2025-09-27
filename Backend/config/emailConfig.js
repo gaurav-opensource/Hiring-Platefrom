@@ -1,16 +1,17 @@
-import nodemailer from "nodemailer";
-import dotenv from "dotenv";
-dotenv.config();
+// Backend/config/emailConfig.js
+const nodemailer = require("nodemailer");
+require("dotenv").config();
 
-export const transporter = nodemailer.createTransport({
-  service: "Gmail",
+const transporter = nodemailer.createTransport({
+  service: "gmail", // lowercase is fine
   auth: {
     user: process.env.EMAIL_USER,
     pass: process.env.EMAIL_PASS,
   },
 });
 
-export const sendEmail = async ({ to, subject, text, html }) => {
+// function to send email
+const sendEmail = async ({ to, subject, text, html }) => {
   try {
     const info = await transporter.sendMail({
       from: `"HealthMate AI" <${process.env.EMAIL_USER}>`,
@@ -26,3 +27,6 @@ export const sendEmail = async ({ to, subject, text, html }) => {
     return false;
   }
 };
+
+// export in CommonJS
+module.exports = { transporter, sendEmail };
