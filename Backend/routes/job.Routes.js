@@ -288,22 +288,24 @@ router.post("/:jobId/send-test-email", async (req, res) => {
     const { jobId } = req.params;
     const { description, startTime, endTime } = req.body;
 
-    // 1. Check if job exists
     const job = await Job.findById(jobId);
     if (!job) {
       return res.status(404).json({ message: "Job not found" });
     }
 
-    // 2. Get all applicants in stage "test"
     const applicants = await ApplicationProgress.find({ jobId, currentStage: "test" })
-      .populate("userId"); // populate to get user info like name, email
+      .populate("userId");
 
     if (!applicants || applicants.length === 0) {
       return res.status(404).json({ message: "No applicants found in test stage" });
     }
 
-    // 3. Send email to each applicant
     for (const applicant of applicants) {
+      if (!applicant.userId) {
+        console.warn("Skipping applicant with missing user:", applicant._id);
+        continue; // skip this applicant
+      }
+
       const testLink = `${process.env.APP_BASE_URL}/test/${applicant.userId._id}/${job._id}?start=${encodeURIComponent(
         startTime
       )}&end=${encodeURIComponent(endTime)}`;
@@ -329,6 +331,7 @@ router.post("/:jobId/send-test-email", async (req, res) => {
     return res.status(500).json({ message: "Server error", error: error.message });
   }
 });
+
 
 
 

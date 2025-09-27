@@ -10,7 +10,8 @@ import {
 } from "@mui/material";
 import { registerStudent } from "../../services/auth.service";
 import Loader from '../../ui/Loader';
-import uploadToCloudinary from '../../services/cloudinary.service'
+import uploadToCloudinary from '../../services/cloudinary.service';
+import API from "../../apiConfig";
 
 const StudentSignup = () => {
   const [form, setForm] = useState({

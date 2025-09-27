@@ -61,7 +61,7 @@ const jobSchema = new mongoose.Schema(
       type: Boolean,
       default: false,
     },
-     urrentStep: {
+     CurrentStep: {
     type: Number,
     default: 0, 
     },

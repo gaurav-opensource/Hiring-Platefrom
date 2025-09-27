@@ -8,6 +8,7 @@ import {
   CircularProgress,
 } from "@mui/material";
 import { useNavigate } from "react-router-dom";
+import API from "../../apiConfig";
 
 const StudentEditProfile = () => {
   const [student, setStudent] = useState(null);
@@ -18,7 +19,7 @@ const StudentEditProfile = () => {
   const fetchProfile = async () => {
     try {
       const token = localStorage.getItem("token");
-      const res = await axios.get("http://localhost:5000/api/students/getProfile", {
+      const res = await axios.get(`${API}/students/getProfile`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       setStudent(res.data);

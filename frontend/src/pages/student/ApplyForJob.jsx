@@ -2,14 +2,14 @@ import { useLocation, useParams, useNavigate } from "react-router-dom";
 import { useState } from "react";
 import axios from "axios";
 import BASE_URL from "../../apiConfig";
-import Loader from '../../ui/Loader'; // ✅ Import Loader component
+import Loader from '../../ui/Loader'; 
 
-// ✅ Cloudinary Upload Helper (for PDF/Docs resumes)
+
 const uploadToCloudinary = async (file, type = "raw") => {
   const data = new FormData();
   data.append("file", file);
-  data.append("upload_preset", "ml_default"); // 👈 replace with your preset from Cloudinary
-  data.append("cloud_name", "dznnyaj0z"); // 👈 your cloud name
+  data.append("upload_preset", "ml_default"); 
+  data.append("cloud_name", "dznnyaj0z"); 
   data.append("folder", "Healthcare");
 
   const url =
@@ -58,10 +58,10 @@ const ApplyPage = () => {
     try {
       setLoading(true);
 
-      // 1️⃣ Upload resume to Cloudinary
+      // 1 Upload resume to Cloudinary
       const resumeLink = await uploadToCloudinary(form.resume, "raw");
 
-      // 2️⃣ Send to backend
+      // 2 Send to backend
       const token = localStorage.getItem("token");
       await axios.post(
         `${BASE_URL}/job/apply/${jobId}`,
@@ -137,7 +137,7 @@ const ApplyPage = () => {
         <div>
           {loading ? (
             <div className="flex justify-center">
-              <Loader /> {/* ✅ Show loader while submitting */}
+              <Loader /> {/*  Show loader while submitting */}
             </div>
           ) : (
             <button

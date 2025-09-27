@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 import CreateQuestion from "../HRCreateQuestion"; 
 
-const BASE_URL = "http://localhost:5000/api";
+import BASE_URL from "../../../apiConfig";
 
 const CodingTest = ({ job, onStageUpdate }) => {
   const [questions, setQuestions] = useState([]);
@@ -53,7 +53,7 @@ const CodingTest = ({ job, onStageUpdate }) => {
     try {
       setProcessing(true);
       const token = localStorage.getItem("token");
-
+      console.log(job._id)
       await axios.post(
         `${BASE_URL}/job/${job._id}/send-test-email`,
         { email, description: emailDescription,startTime, 

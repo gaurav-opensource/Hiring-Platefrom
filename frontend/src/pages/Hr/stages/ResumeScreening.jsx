@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
 
-const BASE_URL = "http://localhost:5000/api";
+import BASE_URL from "../../../apiConfig";
 
 const ResumeScreening = ({ job }) => {
   const [applicants, setApplicants] = useState([]);

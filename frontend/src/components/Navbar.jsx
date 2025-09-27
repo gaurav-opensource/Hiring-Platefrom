@@ -15,16 +15,16 @@ export default function Navbar() {
           <Link to="/" className="hover:text-blue-600">Home</Link>
         </li>
         <li>
-          <Link to="/about" className="hover:text-blue-600">About</Link>
+          <Link to="/" className="hover:text-blue-600">About</Link>
         </li>
         <li>
-          <Link to="/services" className="hover:text-blue-600">Services</Link>
+          <Link to="/" className="hover:text-blue-600">Services</Link>
         </li>
         <li>
-          <Link to="/categories" className="hover:text-blue-600">Categories</Link>
+          <Link to="/" className="hover:text-blue-600">Categories</Link>
         </li>
         <li>
-          <Link to="/contact" className="hover:text-blue-600">Contact</Link>
+          <Link to="/" className="hover:text-blue-600">Contact</Link>
         </li>
       </ul>
 

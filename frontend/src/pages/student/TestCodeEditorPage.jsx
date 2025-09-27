@@ -2,9 +2,10 @@ import { useState, useEffect } from "react";
 import { useParams, useSearchParams } from "react-router-dom";
 import axios from "axios";
 import Editor from "@monaco-editor/react";
+import API from "../../apiConfig";
 
 // Backend + Judge0 API
-const API = "http://localhost:5000/api";
+
 const JUDGE0_URL = "https://judge0-ce.p.rapidapi.com";
 const JUDGE0_KEY = "1b7e563300msh3a6a8fa89c5812bp17fcd1jsn302890a8dc8a";
 const JUDGE0_HOST = "judge0-ce.p.rapidapi.com";

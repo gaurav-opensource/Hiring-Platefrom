@@ -1,5 +1,6 @@
 import axios from "axios";
 import { useState } from "react";
+import API from "../../apiConfig";
 
 export default function HRCreateQuestion({ jobId }) {
   const [title, setTitle] = useState("");
@@ -23,7 +24,7 @@ export default function HRCreateQuestion({ jobId }) {
   try {
     // Step 1: Create the question
     const res = await axios.post(
-      "http://localhost:5000/api/questions/create",
+    `${API}/questions/create`,
       payload
     );
 

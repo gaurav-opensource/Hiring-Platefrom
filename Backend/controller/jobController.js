@@ -6,6 +6,8 @@ const Question = require("../model/question.model.js");
 const PQueue = require("p-queue").default;
 require("dotenv").config();
 const axios = require("axios");
+const FormData = require("form-data");
+
 
 
 
@@ -84,21 +86,18 @@ const calculateResumeScore = async (req, res) => {
       return res.status(404).json({ message: "Job not found" });
     }
 
-    // 2. Find applicants for the job
+    // 2. Find applicants
     const applicants = await ApplicationProgress.find({ jobId });
     if (applicants.length === 0) {
-      return res
-        .status(404)
-        .json({ message: "No applicants found for this job" });
+      return res.status(404).json({ message: "No applicants found" });
     }
 
-    // 3. Build job description text (optional, if you want to use it later)
+    // 3. Build job description text
     let jobDescriptionText = job.description || "";
-    if (job.requirements && job.requirements.length > 0) {
-      jobDescriptionText +=
-        "\nRequirements: " + job.requirements.join(", ");
+    if (job.requirements?.length > 0) {
+      jobDescriptionText += "\nRequirements: " + job.requirements.join(", ");
     }
-    if (job.responsibilities && job.responsibilities.length > 0) {
+    if (job.responsibilities?.length > 0) {
       jobDescriptionText +=
         "\nResponsibilities: " + job.responsibilities.join(", ");
     }
@@ -111,21 +110,47 @@ const calculateResumeScore = async (req, res) => {
     for (const applicant of applicants) {
       if (!applicant.resumeLink) continue;
 
-      // For now, fixed dummy score = 10
-      const scoreData = 10;
+      try {
+        // Fetch the resume PDF from Cloudinary
+        const resumePdf = await axios.get(applicant.resumeLink, {
+          responseType: "arraybuffer",
+        });
 
-      // Save the score into applicant
-      applicant.resumeScore = scoreData;
-      await applicant.save();
+        // Create FormData (use Buffer, not Blob!)
+        const formData = new FormData();
+        formData.append("file", Buffer.from(resumePdf.data), {
+          filename: "resume.pdf",
+          contentType: "application/pdf",
+        });
+        formData.append("job_description", jobDescriptionText);
 
-      // Collect result
-      results.push({
-        userId: applicant.userId,
-        name: applicant.name,
-        email: applicant.email,
-        resumeLink: applicant.resumeLink,
-        score: scoreData,
-      });
+        // Send to Python FastAPI
+        const response = await axios.post(
+          "http://127.0.0.1:8000/score_resume/",
+          formData,
+          { headers: formData.getHeaders() }
+        );
+
+        const scoreData = response.data;
+        console.log(scoreData)
+        // Save score into applicant DB
+        applicant.resumeScore = scoreData.final_score;
+        await applicant.save();
+
+        results.push({
+          userId: applicant.userId,
+          name: applicant.name,
+          email: applicant.email,
+          resumeLink: applicant.resumeLink,
+          score: scoreData.final_score,
+        });
+      } catch (err) {
+        console.error(
+          "Error scoring resume:",
+          applicant.resumeLink,
+          err.message
+        );
+      }
     }
 
     // 5. Send response

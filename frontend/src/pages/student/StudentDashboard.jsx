@@ -1,22 +1,23 @@
 import  { useEffect, useState } from "react";
 import axios from "axios";
-import Loader from '../../ui/Loader'  // ✅ Import your Loader component
+import Loader from '../../ui/Loader' 
+import API from "../../apiConfig";
 
 const stages = ['resume', 'test', 'interview', 'final', 'rejected'];
 
 const StudentDashboard = () => {
   const [applications, setApplications] = useState([]);
   const [loading, setLoading] = useState(true);
-  const token = localStorage.getItem("token"); // ✅ get token here
+  const token = localStorage.getItem("token"); 
 
   useEffect(() => {
     const fetchApplications = async () => {
       try {
         const res = await axios.get(
-          `http://localhost:5000/api/job/my-applications-stages`,
+          `${API}/job/my-applications-stages`,
           {
             headers: {
-              Authorization: `Bearer ${token}` // ✅ send token in header
+              Authorization: `Bearer ${token}` 
             }
           }
         );
@@ -36,7 +37,7 @@ const StudentDashboard = () => {
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
-        <Loader /> {/* ✅ Show your Loader component while loading */}
+        <Loader /> 
       </div>
     );
   }
