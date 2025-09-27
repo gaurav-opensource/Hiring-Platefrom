@@ -4,7 +4,7 @@ import re
 from sentence_transformers import SentenceTransformer
 from sklearn.metrics.pairwise import cosine_similarity
 import uvicorn
-import io  # 👈 add this
+import io  
 
 app = FastAPI(title="Resume Scoring API")
 
