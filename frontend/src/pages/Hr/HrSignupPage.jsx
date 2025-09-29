@@ -2,6 +2,8 @@ import { useState } from "react";
 import axios from "axios";
 import { useNavigate, Link } from "react-router-dom";
 import BASE_URL from "../../apiConfig";
+console.log("BASE_URL is:", BASE_URL);
+
 
 export default function HRSignupPage() {
   const [formData, setFormData] = useState({
@@ -15,6 +17,8 @@ export default function HRSignupPage() {
 
   const [message, setMessage] = useState("");
   const navigate = useNavigate();
+  console.log("BASE_URL is:", BASE_URL);
+
 
   const handleChange = (e) => {
     setFormData({
