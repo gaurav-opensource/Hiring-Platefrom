@@ -151,6 +151,12 @@ This project demonstrates **end-to-end recruitment automation** with both web de
 
 ---
 
+### Live Demo / Hosting
+
+The project is hosted on Render for easy access:
+
+* **Live Demo Link:** [Job finder Link](https://hiring-platefrom-frontend-1.onrender.com)
+
 ## Project Flow
 
 ### Student Flow
