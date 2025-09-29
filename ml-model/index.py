@@ -3,8 +3,8 @@ import pdfplumber
 import re
 from sentence_transformers import SentenceTransformer
 from sklearn.metrics.pairwise import cosine_similarity
-import uvicorn
 import io  
+import uvicorn   # 👈 add this
 
 app = FastAPI(title="Resume Scoring API")
 
@@ -44,15 +44,14 @@ def calculate_resume_score(resume_text, jd_text):
 async def score_resume(file: UploadFile = File(...), job_description: str = Form(...)):
     pdf_bytes = await file.read()
     text = ""
-    # 👇 wrap pdf_bytes inside BytesIO
     with pdfplumber.open(io.BytesIO(pdf_bytes)) as pdf:
         for page in pdf.pages:
             t = page.extract_text()
             if t:
                 text += t + "\n"
     result = calculate_resume_score(text, job_description)
-    print(result);
     return result
 
+# 👇 Run like Flask
 if __name__ == "__main__":
-    uvicorn.run("index:app", host="127.0.0.1", port=8000, reload=True)
+    uvicorn.run(app, host="0.0.0.0", port=5000)
