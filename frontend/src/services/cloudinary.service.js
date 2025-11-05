@@ -1,5 +1,6 @@
 import axios from 'axios';
 
+//Upload File thorugh cloudinary
 const uploadToCloudinary = (file, type = "image") => {
   const data = new FormData();
   data.append("file", file);

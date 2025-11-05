@@ -1,5 +1,4 @@
-import React from "react";
-
+// Not Found Page
 const NotFoundPage = () =>{
     return(
         <div class='bg-green-50 t'>

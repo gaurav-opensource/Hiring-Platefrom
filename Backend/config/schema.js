@@ -1,5 +1,6 @@
 const Joi = require('joi');
 
+// student register validation
 const studentRegisterSchema = Joi.object({
   name: Joi.string().required(),
   email: Joi.string().email().required(),
@@ -53,6 +54,9 @@ const studentRegisterSchema = Joi.object({
   appliedJobs: Joi.array().items(Joi.string().hex().length(24)).optional(),
   savedJobs: Joi.array().items(Joi.string().hex().length(24)).optional(),
 });
+
+
+// login validation
 const loginSchema = Joi.object({
   email: Joi.string().email().required(),
   password: Joi.string().required()

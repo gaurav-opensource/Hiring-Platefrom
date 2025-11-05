@@ -1,6 +1,6 @@
 import { Link, useNavigate } from "react-router-dom";
 
-export default function StudentNavbar() {
+const StudentNavbar = () =>{
   const navigate = useNavigate();
 
   const handleLogout = () => {
@@ -46,3 +46,7 @@ export default function StudentNavbar() {
     </nav>
   );
 }
+
+
+
+export default StudentNavbar;

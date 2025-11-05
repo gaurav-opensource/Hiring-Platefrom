@@ -1,10 +1,9 @@
-import React from "react";
 import { Link } from "react-router-dom";
 import { FaLinkedin, FaGithub, FaTwitter } from "react-icons/fa";
 
 const Footer = () => {
   return (
-    <footer className="bg-gray-900 text-gray-300 py-10 mt-10">
+    <footer className="bg-gray-900 text-gray-300 py-10 mt-0">
       <div className="max-w-6xl mx-auto px-4 grid grid-cols-1 md:grid-cols-3 gap-8">
         <div>
           <h2 className="text-2xl font-bold text-white">HireSmart</h2>

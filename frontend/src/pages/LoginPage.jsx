@@ -5,6 +5,7 @@ import BASE_URL from "../apiConfig";
 import Loader from '../ui/Loader'
 
 const LoginPage = () => {
+  
   const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");

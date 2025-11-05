@@ -14,6 +14,7 @@ API.interceptors.request.use((req) => {
   return req;
 });
 
+
 // Register Student
 export const registerStudent = async (payload) => {
   try {

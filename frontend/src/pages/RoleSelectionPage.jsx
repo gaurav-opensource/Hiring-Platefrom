@@ -1,10 +1,12 @@
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 
-export default function RoleSelectionPage() {
+ const RoleSelectionPage = () =>{
+
   const navigate = useNavigate();
 
   return (
+
     <div className="flex flex-col items-center justify-center min-h-screen bg-gradient-to-r from-indigo-200 via-purple-200 to-pink-200">
       <motion.h1
         initial={{ y: -50, opacity: 0 }}
@@ -44,3 +46,5 @@ export default function RoleSelectionPage() {
     </div>
   );
 }
+
+export default RoleSelectionPage;

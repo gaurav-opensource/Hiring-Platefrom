@@ -3,7 +3,7 @@ import HrNavbar from "../components/HrNavbar";
 import StudentNavbar from "../components/StudentNavbar";
 import Footer from "../components/Footer";
 
-export default function PublicLayout() {
+const PublicLayout = () => {
   const role = localStorage.getItem("role");
 
   return (
@@ -16,3 +16,6 @@ export default function PublicLayout() {
     </div>
   );
 }
+
+
+export default PublicLayout;

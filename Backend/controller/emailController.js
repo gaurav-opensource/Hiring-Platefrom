@@ -1,20 +1,10 @@
 const express = require("express");
-const router = express.Router();
 const Application = require("../models/Application");
+const transporter = require("../config/emailConfig")
 
-const nodemailer = require("nodemailer");
 
-const transporter = nodemailer.createTransport({
-  service: "gmail",
-  auth: {
-    user: "gauravwithhost@gmail.com",
-    pass: "Gaurav@123",
-  },
-});
-
-// API to send emails to all students for a job
-router.post("/send-emails", async (req, res) => {
-  try {
+exports.emailtostudent = async(req,res)=>{
+    try {
     const { jobId, hrEmail } = req.body;
 
     const applications = await Application.find({ jobId });
@@ -44,6 +34,4 @@ router.post("/send-emails", async (req, res) => {
     console.error("Error sending emails:", error);
     res.status(500).json({ message: "Server error." });
   }
-});
-
-module.exports = router;
+}

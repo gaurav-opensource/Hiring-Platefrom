@@ -1,6 +1,6 @@
 import { Link, useNavigate } from "react-router-dom";
 
-export default function HrNavbar() {
+const HrNavbar = () => {
   const navigate = useNavigate();
 
   const handleLogout = () => {
@@ -47,3 +47,6 @@ export default function HrNavbar() {
     </nav>
   );
 }
+
+
+export default HrNavbar;

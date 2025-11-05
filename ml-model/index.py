@@ -4,7 +4,7 @@ import re
 from sentence_transformers import SentenceTransformer
 from sklearn.metrics.pairwise import cosine_similarity
 import io  
-import uvicorn   # 👈 add this
+import uvicorn  
 
 app = FastAPI(title="Resume Scoring API")
 
@@ -52,6 +52,6 @@ async def score_resume(file: UploadFile = File(...), job_description: str = Form
     result = calculate_resume_score(text, job_description)
     return result
 
-# 👇 Run like Flask
+# Run like Flask
 if __name__ == "__main__":
     uvicorn.run(app, host="0.0.0.0", port=5000)

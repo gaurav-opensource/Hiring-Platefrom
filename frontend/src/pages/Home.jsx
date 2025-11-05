@@ -3,78 +3,100 @@ import { FaUserCircle, FaBriefcase, FaGraduationCap, FaHandshake } from "react-i
 import homeImage from "../../src/assets/home.png";
 
 const Home = () => {
+ 
+  const darkGradientStyle = {
+    background: 'linear-gradient(to top right, #1F2E47, #4D336B)',
+  };
+
+  
+  const lightGradientStyle = {
+    background: 'linear-gradient(to bottom, #f0f8ff, #ffffff)',
+  };
+
   return (
-    <div className="bg-gray-50 min-h-screen">
-      {/* Hero Section */}
-      <section className="flex flex-col-reverse lg:flex-row items-center justify-between px-8 lg:px-20 py-16">
-        {/* Left Side */}
-        <motion.div
-          className="max-w-lg"
-          initial={{ opacity: 0, x: -50 }}
-          whileInView={{ opacity: 1, x: 0 }}
-          transition={{ duration: 0.6 }}
-          viewport={{ once: true }}
-        >
-          <h1 className="text-4xl md:text-5xl font-bold text-gray-900 leading-tight">
-            Discover Dream Job in One Place
-          </h1>
-          <div className="inline-block bg-orange-100 border-l-4 border-orange-500 mt-3 px-2 py-1">
-            <span className="text-orange-600 text-2xl font-bold">WorkFinder</span>
-          </div>
-          <p className="text-gray-500 mt-4">
-            Professionally enable open-source leadership skills without front-end scenarios.
-            Continually reconceptualize intermandated intellectual capital.
-          </p>
-          <div className="flex space-x-4 mt-6">
-            <button className="bg-purple-600 text-white px-6 py-3 rounded-lg hover:bg-purple-700 transition">
-              Find Now
-            </button>
-            <button className="border border-purple-600 text-purple-600 px-6 py-3 rounded-lg hover:bg-purple-50 transition">
-              Talk To Us
-            </button>
-          </div>
-          <p className="mt-8 text-gray-400">Leading companies that love Join Up</p>
-          <div className="flex space-x-6 mt-4 opacity-60">
-            <img src="/airbnb.png" alt="airbnb" className="h-6" />
-            <img src="/google.png" alt="google" className="h-6" />
-            <img src="/skype.png" alt="skype" className="h-6" />
-          </div>
-        </motion.div>
-
-        {/* Right Side */}
-        <motion.div
-          className="relative"
-          initial={{ opacity: 0, x: 50 }}
-          whileInView={{ opacity: 1, x: 0 }}
-          transition={{ duration: 0.6 }}
-          viewport={{ once: true }}
-        >
-          <img
-            src={homeImage}
-            alt="Happy Woman"
-            className="w-[400px] rounded-lg object-cover"
-          />
-
-          {/* Skill Test Badge */}
-          <div className="absolute -top-6 left-1/2 transform -translate-x-1/2 bg-white shadow-md px-4 py-2 rounded-lg flex items-center space-x-2">
-            <span className="text-sm font-semibold">Skill Ability Test</span>
-          </div>
-
-          {/* Applicants Badge */}
-          <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 bg-white shadow-md px-4 py-2 rounded-lg flex items-center space-x-2">
-            <div className="flex -space-x-2">
-              <FaUserCircle className="w-8 h-8 text-gray-400" />
-              <FaUserCircle className="w-8 h-8 text-gray-400" />
-              <FaUserCircle className="w-8 h-8 text-gray-400" />
+    <div className="min-h-screen"> 
+      
+      {/*  1. Hero Section  */}
+      <div style={darkGradientStyle}>
+        <section className="flex flex-col-reverse lg:flex-row items-center justify-between px-8 lg:px-20 py-16">
+          {/* Left Side */}
+          <motion.div
+            className="max-w-lg"
+            initial={{ opacity: 0, x: -50 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.6 }}
+            viewport={{ once: true }}
+          >
+            <h1 className="text-4xl md:text-5xl font-bold text-white leading-tight">
+              Discover Dream Job in One Place
+            </h1>
+            <div className="inline-block bg-orange-100 border-l-4 border-orange-500 mt-3 px-2 py-1">
+              <span className="text-orange-600 text-2xl font-bold">WorkFinder</span>
             </div>
-            <span className="text-sm font-medium">Applicants</span>
-          </div>
-        </motion.div>
-      </section>
+            <p className="text-gray-200 mt-4"> 
+              Professionally enable open-source leadership skills without front-end scenarios.
+              Continually reconceptualize intermandated intellectual capital.
+            </p>
+            <div className="flex space-x-4 mt-6">
+              <button className="bg-purple-600 text-white px-6 py-3 rounded-lg hover:bg-purple-700 transition">
+                Find Now
+              </button>
+              <button className="border border-white text-white px-6 py-3 rounded-lg hover:bg-white hover:text-purple-600 transition">
+                Talk To Us
+              </button>
+            </div>
+            <p className="mt-8 text-gray-400">Leading companies that love Join Up</p>
+            <div className="flex space-x-6 mt-4 opacity-80">
+                <img
+                    src="https://upload.wikimedia.org/wikipedia/commons/6/69/Airbnb_Logo_Bélo.svg"
+                    alt="Airbnb"
+                    className="h-6"
+                />
+                <img
+                    src="https://upload.wikimedia.org/wikipedia/commons/2/2f/Google_2015_logo.svg"
+                    alt="Google"
+                    className="h-6"
+                />
+                <img
+                    src="https://upload.wikimedia.org/wikipedia/commons/a/a9/Amazon_logo.svg"
+                    alt="Amazon"
+                    className="h-6"
+                />
+            </div>
+          </motion.div>
 
-      {/* About Platform */}
+          {/* Right Side */}
+          <motion.div
+            className="relative"
+            initial={{ opacity: 0, x: 50 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.6 }}
+            viewport={{ once: true }}
+          >
+            <img
+              src={homeImage}
+              alt="Happy Woman"
+              className="w-[400px] rounded-lg object-cover"
+            />
+            <div className="absolute -top-6 left-1/2 transform -translate-x-1/2 bg-white shadow-md px-4 py-2 rounded-lg flex items-center space-x-2">
+              <span className="text-sm font-semibold">Skill Ability Test</span>
+            </div>
+            <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 bg-white shadow-md px-4 py-2 rounded-lg flex items-center space-x-2">
+              <div className="flex -space-x-2">
+                <FaUserCircle className="w-8 h-8 text-gray-400" />
+                <FaUserCircle className="w-8 h-8 text-gray-400" />
+                <FaUserCircle className="w-8 h-8 text-gray-400" />
+              </div>
+              <span className="text-sm font-medium">Applicants</span>
+            </div>
+          </motion.div>
+        </section>
+      </div>
+
+      {/*  2. About Platform  */}
       <motion.section
-        className="bg-white px-8 lg:px-20 py-16"
+        style={lightGradientStyle} 
+        className="px-8 lg:px-20 py-16" 
         initial={{ opacity: 0, y: 50 }}
         whileInView={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6 }}
@@ -87,7 +109,7 @@ const Home = () => {
         </p>
       </motion.section>
 
-      {/* Services */}
+      {/* Services  */}
       <motion.section
         className="px-8 lg:px-20 py-16 bg-gray-50"
         initial={{ opacity: 0, y: 50 }}
@@ -118,7 +140,7 @@ const Home = () => {
         </div>
       </motion.section>
 
-      {/* Student Section */}
+      {/* Student Section  */}
       <motion.section
         className="bg-white px-8 lg:px-20 py-16"
         initial={{ opacity: 0, y: 50 }}
@@ -127,9 +149,10 @@ const Home = () => {
         viewport={{ once: true }}
       >
         <h2 className="text-3xl font-bold text-center text-gray-900">For Students</h2>
+
         <div className="grid md:grid-cols-2 gap-12 mt-12 items-center">
           <motion.img
-            src="/student.png"
+            src="https://images.unsplash.com/photo-1522202176988-66273c2fd55f?auto=format&fit=crop&w=800&q=80"
             alt="Student preparing"
             className="rounded-lg shadow-md"
             initial={{ opacity: 0, x: -50 }}
@@ -139,7 +162,8 @@ const Home = () => {
           <div>
             <h3 className="text-2xl font-semibold text-gray-800">Empowering Your Career</h3>
             <p className="text-gray-500 mt-4">
-              Students can explore thousands of job listings, take industry-relevant skill tests, and receive guidance on career paths. Build your portfolio and connect with top companies.
+              Students can explore thousands of job listings, take industry-relevant skill tests, and receive guidance on career paths. 
+              Build your portfolio and connect with top companies.
             </p>
             <button className="mt-6 bg-purple-600 text-white px-6 py-3 rounded-lg hover:bg-purple-700 transition">
               Get Started
@@ -148,7 +172,7 @@ const Home = () => {
         </div>
       </motion.section>
 
-      {/* Company Section */}
+      {/* Company Section  */}
       <motion.section
         className="bg-gray-50 px-8 lg:px-20 py-16"
         initial={{ opacity: 0, y: 50 }}
@@ -157,19 +181,21 @@ const Home = () => {
         viewport={{ once: true }}
       >
         <h2 className="text-3xl font-bold text-center text-gray-900">For Companies</h2>
+
         <div className="grid md:grid-cols-2 gap-12 mt-12 items-center">
           <div>
             <h3 className="text-2xl font-semibold text-gray-800">Hire The Best Talent</h3>
             <p className="text-gray-500 mt-4">
-              Companies can post job openings, access skill-tested candidates, and manage hiring with powerful tools. Save time and hire the right person faster.
+              Companies can post job openings, access skill-tested candidates, and manage hiring with powerful tools. 
+              Save time and hire the right person faster.
             </p>
             <button className="mt-6 border border-purple-600 text-purple-600 px-6 py-3 rounded-lg hover:bg-purple-50 transition">
               Post a Job
             </button>
           </div>
           <motion.img
-            src="/company.png"
-            alt="Company meeting"
+            src="https://images.unsplash.com/photo-1598257006626-48b0c252070d?auto=format&fit=crop&w=800&q=80"
+            alt="Hiring team discussion"
             className="rounded-lg shadow-md"
             initial={{ opacity: 0, x: 50 }}
             whileInView={{ opacity: 1, x: 0 }}
@@ -178,7 +204,7 @@ const Home = () => {
         </div>
       </motion.section>
 
-      {/* Call to Action */}
+      {/* Call to Action  */}
       <motion.section
         className="bg-purple-600 text-white text-center px-8 lg:px-20 py-16"
         initial={{ opacity: 0, y: 50 }}

@@ -3,22 +3,25 @@ const bcrypt = require("bcryptjs");
 const User = require("../model/user.model");
 const Job = require('../model/job.model');
 
+// Hr Register Schema validation
 const hrSchema = Joi.object({
   name: Joi.string().required(),
   email: Joi.string().email().required(),
-  password: Joi.string().min(6).required(), // Added password
+  password: Joi.string().min(6).required(),
   contact: Joi.string().required(),
   companyName: Joi.string().required(),
   position: Joi.string().required()
 });
 
+
+// Hr Login Schema validation
 const loginSchema = Joi.object({
   email: Joi.string().email().required(),
   password: Joi.string().required()
 });
 
 
-
+// Hr Register 
 exports.registerHR = async (req, res) => {
   const { error } = hrSchema.validate(req.body);
   if (error) {
@@ -56,7 +59,7 @@ exports.registerHR = async (req, res) => {
 
 
 
-
+// Hr Profile
 exports.getHRProfile = async (req, res) => {
   try {
     const hr = await User.findById(req.user.userId); // from middleware
@@ -76,7 +79,7 @@ exports.getHRProfile = async (req, res) => {
   }
 };
 
-
+//Update Hr Profile
 exports.updateHRProfile = async (req, res) => {
   try {
     const hr = await User.findById(req.user.userId);
@@ -98,7 +101,7 @@ exports.updateHRProfile = async (req, res) => {
   }
 };
 
-
+//Hr create a Job
 exports.createJob = async(req, res) => {
   try {
     const jobData = req.body;
@@ -115,7 +118,7 @@ exports.createJob = async(req, res) => {
 };
 
 
-
+// Get job by Hr id
 exports.getJobsByHR = async (req, res) => {
   try {
     // Get HR ID from authenticated user

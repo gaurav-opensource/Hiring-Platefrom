@@ -41,6 +41,8 @@ function App() {
         <Route path="/" element={<Home />} />
         <Route path="*" element={<NotFoundPage />} />
       </Route>
+
+      {/* Public route */}
         <Route path="/signup" element={<RoleSelectionPage />} />
         <Route path="/hr/signup" element={<HrSignupPage />} />
         <Route path="/student/signup" element={<SignupPage />} />

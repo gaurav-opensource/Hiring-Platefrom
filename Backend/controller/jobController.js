@@ -1,6 +1,5 @@
 const ApplicationProgress = require('../model/applicationProgress.model.js');
 const Job = require('../model/job.model.js');
-const User = require('../model/user.model.js');
 const Submission = require("../model/submission.model.js");
 const Question = require("../model/question.model.js");
 const PQueue = require("p-queue").default;
@@ -10,7 +9,7 @@ const FormData = require("form-data");
 
 
 
-
+//student apply to job
 const applyToJob = async (req, res) => {
   const { jobId } = req.params;
   const {name, email, resumeLink } = req.body;
@@ -42,11 +41,7 @@ const applyToJob = async (req, res) => {
   }
 };
 
-// const atsResponse = await axios.post("http://localhost:5002/calculate-score", {
-      //   resumeLink: applicant.resumeLink,
-      //   jobDescription: jobDescriptionText
-      // });
-    //  const atsResponse = 10;
+//student get all applied job
 const getAppliedJobs = async (req, res) => {
   try {
     const {userId} = req.user.userId; 
@@ -75,6 +70,8 @@ const getAppliedJobs = async (req, res) => {
     return res.status(500).json({ message: error.message });
   }
 };
+
+
 
 const calculateResumeScore = async (req, res) => {
   try {
@@ -167,10 +164,11 @@ const calculateResumeScore = async (req, res) => {
   }
 };
 
+
 const stageChange = async (req, res) => {
   try {
-    const { jobId } = req.params;     // from URL
-    const { stage } = req.body;       // from request body
+    const { jobId } = req.params;    
+    const { stage } = req.body;       
 
     if (!stage) {
       return res.status(400).json({ message: "Stage is required" });
