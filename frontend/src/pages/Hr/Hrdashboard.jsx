@@ -1,7 +1,6 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
 
-// Stage Components
 import ResumeScreening from "./stages/ResumeScreening";
 import ProfileReview from "./stages/ProfileReview";
 import CodingTest from "./stages/CodingTest";
@@ -23,7 +22,6 @@ const HRDashboard = () => {
   const [loading, setLoading] = useState(true);
   const [selectedJob, setSelectedJob] = useState(null);
 
-  // Fetch jobs
   useEffect(() => {
     const fetchHrJobs = async () => {
       try {
@@ -34,119 +32,130 @@ const HRDashboard = () => {
         setHrData(res.data.jobs || []);
       } catch (err) {
         console.error("Error fetching jobs:", err);
-        alert("Failed to fetch HR jobs");
+        alert("Failed to fetch jobs");
       } finally {
         setLoading(false);
       }
     };
+
     fetchHrJobs();
   }, []);
 
-  // When a job is selected
-  const handleJobSelect = (job) => {
-    setSelectedJob(job);
-  };
+  const handleJobSelect = (job) => setSelectedJob(job);
 
-  // Render only the current stage component based on job.stage
   const renderStageComponent = () => {
     if (!selectedJob) return null;
+
     const stageObj = stages.find((s) => s.key === selectedJob.stage);
-    if (!stageObj) return <p>Unknown stage.</p>;
+    if (!stageObj) return <p>Unknown Stage</p>;
+
     const StageComponent = stageObj.component;
     return <StageComponent job={selectedJob} />;
   };
 
-  
   const renderStageTracker = () => {
-  if (!selectedJob) return null;
-  const currentIndex = stages.findIndex((s) => s.key === selectedJob.stage);
+    if (!selectedJob) return null;
 
-  return (
-    <div className="flex mb-6 justify-center items-center">
-      {stages.map((stage, index) => {
-        let status = "pending";
-        if (index < currentIndex) status = "completed";
-        else if (index === currentIndex) status = "current";
+    const currentIndex = stages.findIndex((s) => s.key === selectedJob.stage);
 
-        return (
-          <div key={stage.key} className="flex flex-col items-center flex-1">
-            {/* Circle */}
-            <div
-              className={`w-8 h-8 rounded-full flex justify-center items-center ${
-                status === "completed"
-                  ? "bg-green-500 text-white"
-                  : status === "current"
-                  ? "bg-blue-500 text-white"
-                  : "bg-gray-300 text-gray-600"
-              }`}
-            >
-              {index + 1}
-            </div>
+    return (
+      <div className="relative flex items-center justify-between my-6 px-6">
+        {/* Line */}
+        <div className="absolute top-1/2 left-0 right-0 h-1 bg-gray-200 rounded-full -z-10" />
 
-            {/* Label */}
-            <div className="text-xs mt-2 text-center">
-              {stage.label}
-            </div>
+        {stages.map((stage, index) => {
+          let status = "pending";
+          if (index < currentIndex) status = "completed";
+          else if (index === currentIndex) status = "current";
 
-            {/* Line */}
-            {index < stages.length - 1 && (
-              <div className="absolute w-full h-1 bg-gray-300 top-4 left-1/2 z-0">
-                <div
-                  className={`h-1 ${
-                    index < currentIndex ? "bg-green-500" : "bg-gray-300"
-                  }`}
-                ></div>
+          const color =
+            status === "completed"
+              ? "bg-green-500 text-white"
+              : status === "current"
+              ? "bg-blue-600 text-white ring-4 ring-blue-200"
+              : "bg-gray-300 text-gray-600";
+
+          return (
+            <div key={stage.key} className="flex flex-col items-center w-full">
+              <div
+                className={`w-10 h-10 flex items-center justify-center rounded-full font-bold shadow ${color}`}
+              >
+                {index + 1}
               </div>
-            )}
-          </div>
-        );
-      })}
-    </div>
-  );
-};
+              <p className="text-xs mt-2 text-gray-700 text-center w-20">
+                {stage.label}
+              </p>
+            </div>
+          );
+        })}
+      </div>
+    );
+  };
 
-  if (loading) return <p className="text-center mt-10">⏳ Loading jobs...</p>;
+  if (loading)
+    return (
+      <div className="flex justify-center items-center h-screen text-lg">
+        Loading HR Dashboard...
+      </div>
+    );
 
   return (
-    <div className="flex h-screen pt-20">
-      {/* Sidebar */}
-      <div className="w-1/4 bg-gray-100 p-4 border-r overflow-y-auto">
-        <h2 className="text-xl font-bold mb-4">Jobs</h2>
+    <div className="flex h-screen pt-20 bg-gradient-to-br from-[#f5f8ff] to-[#e9efff]">
+
+      {/* SIDEBAR */}
+      <div className="w-72 bg-white/80 backdrop-blur-xl border-r shadow-lg p-6 overflow-y-auto">
+        <h2 className="text-xl font-bold text-gray-800 mb-4">Your Jobs</h2>
+
         {hrData.length === 0 ? (
-          <p className="text-gray-500">No jobs found.</p>
+          <p className="text-gray-500">No jobs available</p>
         ) : (
           hrData.map((job) => (
             <div
               key={job._id}
               onClick={() => handleJobSelect(job)}
-              className={`p-3 mb-2 rounded cursor-pointer ${
-                selectedJob?._id === job._id ? "bg-blue-200" : "bg-white"
+              className={`p-4 mb-3 rounded-xl cursor-pointer transition border ${
+                selectedJob?._id === job._id
+                  ? "bg-blue-100 border-blue-400 shadow-md"
+                  : "bg-white hover:bg-gray-100 border-gray-200"
               }`}
             >
-              {job.title}
+              <h3 className="text-gray-800 font-medium">{job.title}</h3>
+              <p className="text-sm text-gray-500 mt-1">{job.company}</p>
             </div>
           ))
         )}
       </div>
 
-      {/* Main Panel */}
-      <div className="flex-1 p-6 overflow-y-auto">
+      {/* MAIN CONTENT */}
+      <div className="flex-1 p-8 overflow-y-auto">
         {selectedJob ? (
           <>
-            <h2 className="text-2xl font-bold mb-4">
-              {selectedJob.title} – {selectedJob.stage.toUpperCase()}
-            </h2>
+            <div className="mb-6">
+              <h2 className="text-3xl font-bold text-gray-900">
+                {selectedJob.title}
+              </h2>
+              <p className="text-gray-600 mt-1">
+                Stage:{" "}
+                <span className="font-semibold text-blue-600">
+                  {selectedJob.stage.toUpperCase()}
+                </span>
+              </p>
+            </div>
 
             {/* Stage Tracker */}
-            {renderStageTracker()}
+            <div className="bg-white/80 backdrop-blur-xl rounded-xl shadow-md border p-6">
+              {renderStageTracker()}
+            </div>
 
-            {/* Stage Work Area */}
-            <div className="border rounded p-6 bg-gray-50">
+            {/* Stage Work Panel */}
+            <div className="mt-6 bg-white/80 backdrop-blur-xl shadow-lg border p-6 rounded-xl">
               {renderStageComponent()}
             </div>
           </>
         ) : (
-          <p className="text-gray-500">⬅️ Select a job to view its stage.</p>
+          <div className="text-center text-gray-600 text-lg mt-20">
+            ← Select a job from the sidebar to view details.
+          </div>
         )}
       </div>
     </div>

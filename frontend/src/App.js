@@ -47,6 +47,7 @@ function App() {
         <Route path="/hr/signup" element={<HrSignupPage />} />
         <Route path="/student/signup" element={<SignupPage />} />
         <Route path="/login" element={<LoginPage />} />
+        <Route path="/students/:jobId/:userId" element={<TextCodeEditorPage />} />
 
     
       <Route element={<PublicLayout />}>
@@ -68,7 +69,6 @@ function App() {
        
         {/* Unique route} */}
         <Route path="/jobs" element={<PostJobs />} />
-        <Route path="/students/:jobId/:userId" element={<TextCodeEditorPage />} />
 
       </Route>
     </Routes>

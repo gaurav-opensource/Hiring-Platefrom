@@ -66,7 +66,7 @@ const TextCodeEditorPage = () => {
   const [testResults, setTestResults] = useState(null);
   const [isExecuting, setIsExecuting] = useState(false);
 
-  // ✅ Timer logic to update current time
+  // Timer logic to update current time
   useEffect(() => {
     const interval = setInterval(() => {
       setCurrentTime(new Date());
@@ -74,7 +74,7 @@ const TextCodeEditorPage = () => {
     return () => clearInterval(interval);
   }, []);
 
-  // ✅ Lock/unlock test based on time
+  // Lock/unlock test based on time
   useEffect(() => {
     if (currentTime >= startTime && currentTime <= endTime) {
       setIsLocked(false);
@@ -86,7 +86,7 @@ const TextCodeEditorPage = () => {
     }
   }, [currentTime, startTime, endTime]);
 
-  // ✅ Fetch questions
+  // Fetch questions
   useEffect(() => {
     const fetchQuestions = async () => {
       try {
@@ -102,7 +102,7 @@ const TextCodeEditorPage = () => {
     fetchQuestions();
   }, [jobId]);
 
-  // ✅ Initialize code answers
+  // Initialize code answers
   useEffect(() => {
     if (questions.length > 0) {
       const currentQId = questions[currentIndex]._id;
@@ -205,10 +205,10 @@ const TextCodeEditorPage = () => {
       const currentQ = questions[currentIndex];
       await handleSave(currentQ._id);
       await axios.post(`${API}/job/submit`, { userId, jobId });
-      alert("✅ Test submitted successfully!");
+      alert("Test submitted successfully!");
     } catch (err) {
       console.error("Error submitting test:", err);
-      alert("❌ Error submitting test");
+      // alert("Error submitting test");
     }
   };
 
@@ -217,7 +217,7 @@ const TextCodeEditorPage = () => {
 
   const currentQ = questions[currentIndex];
 
-  // ✅ Display messages if locked
+  // Display messages if locked
   if (isLocked && currentTime < startTime) {
     return <p className="p-6 text-red-600">⏳ Test has not started yet. It will start at {startTime.toLocaleString()}</p>;
   }

@@ -9,21 +9,19 @@ const FormData = require("form-data");
 
 
 
-//student apply to job
+//student apply for job
 const applyToJob = async (req, res) => {
-  const { jobId } = req.params;
+  const { jobId } = req.params;//get job id from header
   const {name, email, resumeLink } = req.body;
   const userId = req.user.userId;
-  console.log(userId)
 
   try {
     const jobData = await Job.findById(jobId);
     if (!jobData) return res.status(404).json({ message: "Job not found" });
 
     const existingProgress = await ApplicationProgress.findOne({ userId, jobId });
-    if (existingProgress) {
-      return res.status(400).json({ message: "You have already applied for this job" });
-    }
+    if (existingProgress) return res.status(400).json({ message: "You have already applied for this job" });
+  
 
     const progress = new ApplicationProgress({
       name,
@@ -33,6 +31,7 @@ const applyToJob = async (req, res) => {
       resumeLink,
       currentStage: "resume"
     });
+
     await progress.save();
     res.status(201).json({ message: "Applied successfully!" });
   } catch (err) {
@@ -49,17 +48,15 @@ const getAppliedJobs = async (req, res) => {
     const applications = await ApplicationProgress.find({ userId })
       .populate("jobId", "title company location description");
 
-    if (!applications || applications.length === 0) {
-      return res.status(404).json({ message: "No applied jobs found" });
-    }
-
+    if (!applications || applications.length === 0) return res.status(404).json({ message: "No applied jobs found" });
+    
     const formatted = applications.map(app => ({
       jobId: app.jobId._id,
       title: app.jobId.title,
       company: app.jobId.company,
       location: app.jobId.location,
       description: app.jobId.description,
-      currentStage: app.stage,  // जैसे "resume", "test", "interview", etc.
+      currentStage: app.stage,  
       allStages: ['resume', 'test', 'interview', 'final', 'rejected']
     }));
 
@@ -72,28 +69,25 @@ const getAppliedJobs = async (req, res) => {
 };
 
 
-
+//calculate resume score basis of  job description
 const calculateResumeScore = async (req, res) => {
   try {
     const { jobId } = req.params;
+    console.log("Calculate Resume Score")
 
     // 1. Check if job exists
     const job = await Job.findById(jobId);
-    if (!job) {
-      return res.status(404).json({ message: "Job not found" });
-    }
+    if (!job) return res.status(404).json({ message: "Job not found" });
 
     // 2. Find applicants
     const applicants = await ApplicationProgress.find({ jobId });
-    if (applicants.length === 0) {
-      return res.status(404).json({ message: "No applicants found" });
-    }
+    if (applicants.length === 0) return res.status(404).json({ message: "No applicants found" });
+    
 
     // 3. Build job description text
     let jobDescriptionText = job.description || "";
-    if (job.requirements?.length > 0) {
-      jobDescriptionText += "\nRequirements: " + job.requirements.join(", ");
-    }
+    if (job.requirements?.length > 0) jobDescriptionText += "\nRequirements: " + job.requirements.join(", ");
+    
     if (job.responsibilities?.length > 0) {
       jobDescriptionText +=
         "\nResponsibilities: " + job.responsibilities.join(", ");
@@ -130,7 +124,7 @@ const calculateResumeScore = async (req, res) => {
 
         const scoreData = response.data;
         console.log(scoreData)
-        // Save score into applicant DB
+       
         applicant.resumeScore = scoreData.final_score;
         await applicant.save();
 
@@ -165,30 +159,26 @@ const calculateResumeScore = async (req, res) => {
 };
 
 
+//state change in job after completed current state
 const stageChange = async (req, res) => {
   try {
     const { jobId } = req.params;    
     const { stage } = req.body;       
 
-    if (!stage) {
-      return res.status(400).json({ message: "Stage is required" });
-    }
+    if (!stage) return res.status(400).json({ message: "Stage is required" });
+    
 
     // Find and update job
     const job = await Job.findByIdAndUpdate(
       jobId,
       { stage },
-      { new: true }   // return updated document
+      { new: true }   
     );
 
-    if (!job) {
-      return res.status(404).json({ message: "Job not found" });
-    }
+    if (!job) return res.status(404).json({ message: "Job not found" });
+    
 
-    return res.json({
-      message: "Stage updated successfully",
-      job,
-    });
+    return res.json({ message: "Stage updated successfully",job,});
   } catch (error) {
     console.error("Error in stageChange:", error.message);
     return res.status(500).json({
@@ -198,6 +188,7 @@ const stageChange = async (req, res) => {
   }
 };
 
+//state chnage in student dashboard
 const stageChangeInStudent = async (req, res) => {
   try {
     const { jobId } = req.params;             // from URL
@@ -206,9 +197,8 @@ const stageChangeInStudent = async (req, res) => {
     if (!studentIds || studentIds.length === 0) {
       return res.status(400).json({ message: "No student IDs provided" });
     }
-    if (!stage) {
-      return res.status(400).json({ message: "Stage is required" });
-    }
+    if (!stage) return res.status(400).json({ message: "Stage is required" });
+    
 
     // Update all matching ApplicationProgress docs
     const result = await ApplicationProgress.updateMany(
@@ -230,7 +220,7 @@ const stageChangeInStudent = async (req, res) => {
   }
 };
 
-
+//get all existing job of hr
 const getJobsByHRId = async (req, res) => {
   try {
     const hrId = req.user.userId;
@@ -242,6 +232,7 @@ const getJobsByHRId = async (req, res) => {
 };
 
 
+// fetch all jobs
 const fetchAllJob = async (req, res) => {
   try {
     const jobs = await Job.find().sort({ createdAt: -1 });
@@ -251,7 +242,7 @@ const fetchAllJob = async (req, res) => {
   }
 };
 
-
+//Get all job whose student applied
 const getStudentsByJobId = async (req, res) => {
   try {
   const { jobId } = req.params;
@@ -271,8 +262,9 @@ const getStudentsByJobId = async (req, res) => {
 }
 
 };
+//
 
-
+//Get top scores profile after calculate resume score
 const shortlistTopByResume = async (req, res) => {
   const { jobId, topN } = req.body;
   if (!jobId || !topN || isNaN(topN) || topN <= 0) {
@@ -332,7 +324,7 @@ const shortlistTopByResume = async (req, res) => {
   }
 };
 
-
+//upadate step pipe line so easily identify 
 const updatePipelineStep = async(req,res) =>{
   const { jobId } = req.params;
   const { step, status } = req.body;
@@ -357,14 +349,10 @@ const updatePipelineStep = async(req,res) =>{
 }
 
 
-
-
 const LANGUAGE_MAP = {
   javascript: 63,
   python: 71,
   java: 62,
-  "c++": 54,
-  c: 50,
 };
 
 
@@ -459,6 +447,7 @@ const evaluateJob = async (req, res) => {
 
 const sendEmailoftest = async(req,res) =>{
   
+
 }
 const enableTestSection = async (req, res) => {
   try {
@@ -487,6 +476,53 @@ const enableTestSection = async (req, res) => {
   }
 };
 
+const sendTestEmail = async (req, res) => {
+  try {
+    const { jobId } = req.params;
+    const { description, startTime, endTime } = req.body;
+
+    const job = await Job.findById(jobId);
+    if (!job) {
+      return res.status(404).json({ message: "Job not found" });
+    }
+
+    const applicants = await ApplicationProgress.find({ jobId, currentStage: "test" })
+      .populate("userId");
+
+    if (!applicants || applicants.length === 0) {
+      return res.status(404).json({ message: "No applicants found in test stage" });
+    }
+
+    for (const applicant of applicants) {
+      if (!applicant.userId) continue;
+
+      const testLink = `${process.env.APP_BASE_URL}/test/${applicant.userId._id}/${job._id}?start=${encodeURIComponent(
+        startTime
+      )}&end=${encodeURIComponent(endTime)}`;
+
+      await sendEmail({
+        to: applicant.userId.email,
+        subject: `Coding Test Invitation for ${job.title}`,
+        html: `
+          <p>Dear <strong>${applicant.userId.name}</strong>,</p>
+          <p>${description}</p>
+          <p><strong>Test Window:</strong> 
+             ${new Date(startTime).toLocaleString()} - 
+             ${new Date(endTime).toLocaleString()}</p>
+          <p><a href="${testLink}">Start Test</a></p>
+        `,
+      });
+    }
+
+    return res.json({ message: "Test emails sent successfully!" });
+
+  } catch (error) {
+    console.error("Error sending test emails:", error);
+    return res.status(500).json({ message: "Server error", error: error.message });
+  }
+};
+
+
 
 module.exports = {
   applyToJob,
@@ -500,5 +536,6 @@ module.exports = {
   stageChange,
   stageChangeInStudent,
   enableTestSection,
-  sendEmailoftest
+  sendEmailoftest,
+  sendTestEmail
 }

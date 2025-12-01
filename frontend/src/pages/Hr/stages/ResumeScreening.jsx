@@ -31,40 +31,51 @@ const ResumeScreening = ({ job }) => {
   }, [job]);
 
   const handleProcessResumes = async () => {
-    if (!job) return;
-    setProcessing(true);
-    try {
-      const token = localStorage.getItem("token");
+  if (!job) return;
+  setProcessing(true);
 
-      // ✅ First API call: Resume Screening
-      await axios.post(
-        `${BASE_URL}/job/${job._id}/resume-screen`,
-        {}, // Empty body or necessary data
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
+  try {
+    const token = localStorage.getItem("token");
 
-     // ✅ Second API call: Update job stage
-      await axios.post(
-        `${BASE_URL}/job/${job._id}/stageChange`,
-        { stage: "profile" },
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
+    // 1️⃣ Resume Screening
+    await axios.post(
+      `${BASE_URL}/job/${job._id}/resume-screen`,
+      {},
+      { headers: { Authorization: `Bearer ${token}` } }
+    );
 
-      // ✅ Third API call: Update each student’s stage in their application tracker
-      // await axios.post(
-      //   `${BASE_URL}/job/${job._id}/stageChangeInStudent`,
-      //   { stage: "profile" },
-      //   { headers: { Authorization: `Bearer ${token}` } }
-      // );
+    // 2️⃣ Change Job Stage
+    await axios.post(
+      `${BASE_URL}/job/${job._id}/stageChange`,
+      { stage: "profile" },
+      { headers: { Authorization: `Bearer ${token}` } }
+    );
 
-      alert("Resume screening completed and stage updated!");
-    } catch (err) {
-      console.error("Error processing resumes:", err);
-      alert("Failed to process resumes.");
-    } finally {
-      setProcessing(false);
-    }
-  };
+    // 3️⃣ Update Student Stage in Application Tracker
+    await axios.post(
+      `${BASE_URL}/job/${job._id}/stageChangeInStudent`,
+      { stage: "profile" },
+      { headers: { Authorization: `Bearer ${token}` } }
+    );
+
+    // 4️⃣ NEW → Resume Score Calculation API
+    const scoreRes = await axios.post(
+      `${BASE_URL}/job/${job._id}/resume-score`,
+      {},
+      { headers: { Authorization: `Bearer ${token}` } }
+    );
+
+    console.log("Resume scores:", scoreRes.data);
+
+    alert("Resume screening + scoring completed successfully!");
+  } catch (err) {
+    console.error("Error processing resumes:", err);
+    alert("Failed to process resumes.");
+  } finally {
+    setProcessing(false);
+  }
+};
+
 
   return (
     <div>

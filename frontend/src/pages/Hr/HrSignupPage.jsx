@@ -2,8 +2,6 @@ import { useState } from "react";
 import axios from "axios";
 import { useNavigate, Link } from "react-router-dom";
 import BASE_URL from "../../apiConfig";
-console.log("BASE_URL is:", BASE_URL);
-
 
 export default function HRSignupPage() {
   const [formData, setFormData] = useState({
@@ -17,8 +15,6 @@ export default function HRSignupPage() {
 
   const [message, setMessage] = useState("");
   const navigate = useNavigate();
-  console.log("BASE_URL is:", BASE_URL);
-
 
   const handleChange = (e) => {
     setFormData({
@@ -32,7 +28,7 @@ export default function HRSignupPage() {
     setMessage("");
 
     try {
-      const res = await axios.post(`${BASE_URL}/hr/register`, formData);
+      await axios.post(`${BASE_URL}/hr/register`, formData);
       setMessage("HR Registered Successfully!");
       setFormData({
         name: "",
@@ -49,108 +45,73 @@ export default function HRSignupPage() {
   };
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-purple-50 to-gray-100 p-4">
-      <div className="bg-white shadow-xl rounded-xl p-8 w-full max-w-md">
-        <h2 className="text-3xl font-bold mb-6 text-center text-purple-600">
+    <div className="relative flex items-center justify-center min-h-screen p-4 bg-gradient-to-br from-[#0A0F1F] via-[#1B2340] to-[#301A4A]">
+      
+      {/* Background Glow Effects */}
+      <div className="absolute inset-0 -z-10">
+        <div className="absolute top-10 left-10 w-72 h-72 bg-purple-600/20 blur-[140px]" />
+        <div className="absolute bottom-10 right-10 w-80 h-80 bg-blue-500/20 blur-[150px]" />
+      </div>
+
+      {/* Card Container */}
+      <div className="w-full max-w-md p-8 rounded-2xl shadow-2xl border border-white/10 bg-white/10 backdrop-blur-xl text-gray-200">
+
+        <h2 className="text-4xl font-extrabold mb-6 text-center text-white drop-shadow">
           HR Sign Up
         </h2>
 
         {message && (
-          <div className="bg-green-100 text-green-700 text-sm p-2 mb-4 rounded text-center">
+          <div
+            className={`text-sm p-3 mb-4 rounded text-center border ${
+              message.includes("Error")
+                ? "bg-red-500/20 text-red-300 border-red-500/40"
+                : "bg-green-500/20 text-green-300 border-green-500/40"
+            }`}
+          >
             {message}
           </div>
         )}
 
         <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <label className="block text-gray-700 mb-2 font-medium">Full Name</label>
-            <input
-              type="text"
-              name="name"
-              placeholder="Enter your name"
-              value={formData.name}
-              onChange={handleChange}
-              required
-              className="w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-purple-500 outline-none transition"
-            />
-          </div>
+          {/* Fields */}
+          {[
+            { label: "Full Name", name: "name", type: "text" },
+            { label: "Email Address", name: "email", type: "email" },
+            { label: "Password", name: "password", type: "password" },
+            { label: "Contact Number", name: "contact", type: "text" },
+            { label: "Company Name", name: "companyName", type: "text" },
+            { label: "Position", name: "position", type: "text" },
+          ].map((field) => (
+            <div key={field.name}>
+              <label className="block text-gray-300 mb-2 font-medium">
+                {field.label}
+              </label>
+              <input
+                type={field.type}
+                name={field.name}
+                placeholder={field.label}
+                value={formData[field.name]}
+                onChange={handleChange}
+                required
+                className="w-full p-3 rounded-lg bg-white/10 border border-white/20 text-white placeholder-gray-400
+                focus:outline-none focus:ring-2 focus:ring-purple-500 transition"
+              />
+            </div>
+          ))}
 
-          <div>
-            <label className="block text-gray-700 mb-2 font-medium">Email Address</label>
-            <input
-              type="email"
-              name="email"
-              placeholder="Enter your email"
-              value={formData.email}
-              onChange={handleChange}
-              required
-              className="w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-purple-500 outline-none transition"
-            />
-          </div>
-
-          <div>
-            <label className="block text-gray-700 mb-2 font-medium">Password</label>
-            <input
-              type="password"
-              name="password"
-              placeholder="Enter your password"
-              value={formData.password}
-              onChange={handleChange}
-              required
-              className="w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-purple-500 outline-none transition"
-            />
-          </div>
-
-          <div>
-            <label className="block text-gray-700 mb-2 font-medium">Contact Number</label>
-            <input
-              type="text"
-              name="contact"
-              placeholder="Enter your contact number"
-              value={formData.contact}
-              onChange={handleChange}
-              required
-              className="w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-purple-500 outline-none transition"
-            />
-          </div>
-
-          <div>
-            <label className="block text-gray-700 mb-2 font-medium">Company Name</label>
-            <input
-              type="text"
-              name="companyName"
-              placeholder="Enter company name"
-              value={formData.companyName}
-              onChange={handleChange}
-              required
-              className="w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-purple-500 outline-none transition"
-            />
-          </div>
-
-          <div>
-            <label className="block text-gray-700 mb-2 font-medium">Position</label>
-            <input
-              type="text"
-              name="position"
-              placeholder="Enter your position"
-              value={formData.position}
-              onChange={handleChange}
-              required
-              className="w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-purple-500 outline-none transition"
-            />
-          </div>
-
+          {/* Signup Button */}
           <button
             type="submit"
-            className="w-full bg-purple-600 hover:bg-purple-700 text-white font-semibold p-3 rounded-lg transition duration-300"
+            className="w-full bg-purple-600 hover:bg-purple-700 active:scale-95 text-white font-semibold p-3 rounded-lg transition shadow-lg"
           >
             Sign Up
           </button>
         </form>
 
-        <p className="text-center text-gray-600 mt-4 text-sm">
+        {/* Go to Login */}
+        <p className="text-center text-gray-300 mt-4 text-sm">
           Already have an account?{" "}
-          <Link to="/login" className="text-purple-600 hover:underline font-medium">
+          <Link to="/login" className="text-purple-300 hover:underline font-medium">
             Login here
           </Link>
         </p>

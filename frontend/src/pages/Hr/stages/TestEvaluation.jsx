@@ -4,7 +4,7 @@ import axios from "axios";
 import BASE_URL from "../../../apiConfig";
 
 export default function TestEvaluation({ job }) {
-  const [allSubmitted, setAllSubmitted] = useState(false);
+  const [allSubmitted, setAllSubmitted] = useState(true);
   const [students, setStudents] = useState([]);
   const [loading, setLoading] = useState(false);
   const [selectCount, setSelectCount] = useState(0);

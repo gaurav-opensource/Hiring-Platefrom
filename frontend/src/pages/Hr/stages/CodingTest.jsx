@@ -55,7 +55,7 @@ const CodingTest = ({ job, onStageUpdate }) => {
       const token = localStorage.getItem("token");
       console.log(job._id)
       await axios.post(
-        `${BASE_URL}/job/${job._id}/send-test-email`,
+        `${BASE_URL}/email/send-test-email/${job._id}`,
         { email, description: emailDescription,startTime, 
           endTime  },
         { headers: { Authorization: `Bearer ${token}` } }
@@ -117,7 +117,7 @@ const CodingTest = ({ job, onStageUpdate }) => {
             <ul className="space-y-2 mb-4 max-h-64 overflow-auto">
               {questions.map((q, index) => (
                 <li key={q._id} className="p-2 border rounded bg-gray-50">
-                  <p><strong>Q{index + 1}:</strong> {q.text}</p>
+                  <p><strong>Q{index + 1}:</strong> {q.title}</p>
                 </li>
               ))}
             </ul>

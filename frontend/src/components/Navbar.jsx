@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { HiMenu } from "react-icons/hi"; // Mobile menu icon के लिए एक icon import किया गया है
+import { HiMenu } from "react-icons/hi"; // Mobile menu icon
 
 export default function Navbar() {
   const primaryColor = "purple-600";
@@ -11,7 +11,6 @@ export default function Navbar() {
       
       {/* Left Side: Logo (CSS Styling) */}
       <div className="flex items-center space-x-2">
-        {/* CSS से बना Logo */}
         <div className={`w-6 h-6 rounded-full bg-${primaryColor} flex items-center justify-center`}>
           <span className="text-white text-sm font-bold">W</span>
         </div>

@@ -3,23 +3,28 @@ import { FaUserCircle, FaBriefcase, FaGraduationCap, FaHandshake } from "react-i
 import homeImage from "../../src/assets/home.png";
 
 const Home = () => {
- 
+
   const darkGradientStyle = {
-    background: 'linear-gradient(to top right, #1F2E47, #4D336B)',
+    background: "linear-gradient(135deg, #0A0F1F 0%, #1B2540 50%, #2E1A47 100%)",
   };
 
-  
-  const lightGradientStyle = {
-    background: 'linear-gradient(to bottom, #f0f8ff, #ffffff)',
-  };
+  const cardGlass = "bg-white/10 backdrop-blur-lg border border-white/20 shadow-xl";
 
   return (
-    <div className="min-h-screen"> 
-      
-      {/*  1. Hero Section  */}
+    <div className="min-h-screen bg-[#0A0E19] text-gray-200">
+
+      {/* Decorative Background Glows */}
+      <div className="fixed inset-0 -z-10">
+        <div className="absolute -top-20 -left-20 w-72 h-72 bg-purple-600/20 blur-[140px]"></div>
+        <div className="absolute bottom-10 right-10 w-80 h-80 bg-blue-500/20 blur-[150px]"></div>
+      </div>
+
+
+      {/* HERO SECTION */}
       <div style={darkGradientStyle}>
-        <section className="flex flex-col-reverse lg:flex-row items-center justify-between px-8 lg:px-20 py-16">
-          {/* Left Side */}
+        <section className="flex flex-col-reverse lg:flex-row items-center justify-between px-8 lg:px-20 py-20">
+
+          {/* LEFT SIDE */}
           <motion.div
             className="max-w-lg"
             initial={{ opacity: 0, x: -50 }}
@@ -27,45 +32,39 @@ const Home = () => {
             transition={{ duration: 0.6 }}
             viewport={{ once: true }}
           >
-            <h1 className="text-4xl md:text-5xl font-bold text-white leading-tight">
-              Discover Dream Job in One Place
+            <h1 className="text-4xl md:text-6xl font-extrabold text-white leading-tight drop-shadow-lg">
+              Discover Your Dream Job
             </h1>
-            <div className="inline-block bg-orange-100 border-l-4 border-orange-500 mt-3 px-2 py-1">
-              <span className="text-orange-600 text-2xl font-bold">WorkFinder</span>
+
+            <div className="inline-block bg-purple-700/20 border border-purple-400/30 mt-4 px-3 py-1 rounded-lg shadow-md backdrop-blur-lg">
+              <span className="text-purple-300 text-2xl font-bold tracking-wide">WorkFinder</span>
             </div>
-            <p className="text-gray-200 mt-4"> 
-              Professionally enable open-source leadership skills without front-end scenarios.
-              Continually reconceptualize intermandated intellectual capital.
+
+            <p className="text-gray-300 mt-4 text-lg leading-relaxed">
+              Empowering careers with modern hiring tools, AI-driven skill tests, 
+              and seamless job search tailored for students & companies.
             </p>
+
             <div className="flex space-x-4 mt-6">
-              <button className="bg-purple-600 text-white px-6 py-3 rounded-lg hover:bg-purple-700 transition">
+              <button className="bg-purple-600 hover:bg-purple-700 px-8 py-3 font-semibold rounded-xl transition shadow-lg">
                 Find Now
               </button>
-              <button className="border border-white text-white px-6 py-3 rounded-lg hover:bg-white hover:text-purple-600 transition">
+              <button className="border border-purple-300 text-purple-300 px-8 py-3 rounded-xl hover:bg-purple-300 hover:text-[#1A1D2E] transition shadow-lg">
                 Talk To Us
               </button>
             </div>
-            <p className="mt-8 text-gray-400">Leading companies that love Join Up</p>
-            <div className="flex space-x-6 mt-4 opacity-80">
-                <img
-                    src="https://upload.wikimedia.org/wikipedia/commons/6/69/Airbnb_Logo_Bélo.svg"
-                    alt="Airbnb"
-                    className="h-6"
-                />
-                <img
-                    src="https://upload.wikimedia.org/wikipedia/commons/2/2f/Google_2015_logo.svg"
-                    alt="Google"
-                    className="h-6"
-                />
-                <img
-                    src="https://upload.wikimedia.org/wikipedia/commons/a/a9/Amazon_logo.svg"
-                    alt="Amazon"
-                    className="h-6"
-                />
+
+            <p className="mt-8 text-gray-400">Leading companies that trust us</p>
+
+            <div className="flex space-x-8 mt-4 opacity-80">
+              <img src="https://upload.wikimedia.org/wikipedia/commons/6/69/Airbnb_Logo_Bélo.svg" className="h-6" />
+              <img src="https://upload.wikimedia.org/wikipedia/commons/2/2f/Google_2015_logo.svg" className="h-6" />
+              <img src="https://upload.wikimedia.org/wikipedia/commons/a/a9/Amazon_logo.svg" className="h-6" />
             </div>
           </motion.div>
 
-          {/* Right Side */}
+
+          {/* RIGHT SIDE */}
           <motion.div
             className="relative"
             initial={{ opacity: 0, x: 50 }}
@@ -73,158 +72,144 @@ const Home = () => {
             transition={{ duration: 0.6 }}
             viewport={{ once: true }}
           >
-            <img
-              src={homeImage}
-              alt="Happy Woman"
-              className="w-[400px] rounded-lg object-cover"
-            />
-            <div className="absolute -top-6 left-1/2 transform -translate-x-1/2 bg-white shadow-md px-4 py-2 rounded-lg flex items-center space-x-2">
-              <span className="text-sm font-semibold">Skill Ability Test</span>
+            <img src={homeImage} className="w-[420px] rounded-2xl shadow-2xl border border-white/10" />
+
+            <div className={`${cardGlass} absolute -top-6 left-1/2 transform -translate-x-1/2 px-4 py-2 rounded-xl flex items-center space-x-2`}>
+              <span className="text-sm font-semibold text-purple-200">Skill Ability Test</span>
             </div>
-            <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 bg-white shadow-md px-4 py-2 rounded-lg flex items-center space-x-2">
-              <div className="flex -space-x-2">
-                <FaUserCircle className="w-8 h-8 text-gray-400" />
-                <FaUserCircle className="w-8 h-8 text-gray-400" />
-                <FaUserCircle className="w-8 h-8 text-gray-400" />
-              </div>
-              <span className="text-sm font-medium">Applicants</span>
+
+            <div className={`${cardGlass} absolute bottom-0 left-1/2 transform -translate-x-1/2 px-5 py-2 rounded-xl flex items-center space-x-3`}>
+              <FaUserCircle className="w-7 h-7 text-gray-300" />
+              <FaUserCircle className="w-7 h-7 text-gray-300" />
+              <FaUserCircle className="w-7 h-7 text-gray-300" />
+              <span className="text-sm font-medium text-purple-200">Applicants</span>
             </div>
           </motion.div>
+
         </section>
       </div>
 
-      {/*  2. About Platform  */}
+
+      {/* ABOUT PLATFORM */}
       <motion.section
-        style={lightGradientStyle} 
-        className="px-8 lg:px-20 py-16" 
+        className="px-8 lg:px-20 py-20"
         initial={{ opacity: 0, y: 50 }}
         whileInView={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6 }}
-        viewport={{ once: true }}
       >
-        <h2 className="text-3xl font-bold text-center text-gray-900">About Our Platform</h2>
-        <p className="text-gray-500 text-center mt-4 max-w-2xl mx-auto">
-          Our platform allows students to directly apply for jobs, take skill tests, and manage all their career steps in one place.
-          HR professionals can post jobs, review applications, and schedule interviews seamlessly.
+        <h2 className="text-3xl font-bold text-center text-white">About Our Platform</h2>
+        <p className="text-gray-400 text-center mt-5 max-w-2xl mx-auto text-lg">
+          A complete career management system where students apply for jobs, take tests,
+          and build portfolios — while companies post jobs, evaluate talent, and hire faster.
         </p>
       </motion.section>
 
-      {/* Services  */}
+
+      {/* SERVICES */}
       <motion.section
-        className="px-8 lg:px-20 py-16 bg-gray-50"
+        className="px-8 lg:px-20 py-20 bg-[#111827]"
         initial={{ opacity: 0, y: 50 }}
         whileInView={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6 }}
-        viewport={{ once: true }}
       >
-        <h2 className="text-3xl font-bold text-center text-gray-900">Our Services</h2>
-        <div className="grid md:grid-cols-3 gap-8 mt-8">
-          {[
-            { title: "Job Search", desc: "Find jobs that match your skills and career goals.", icon: <FaBriefcase className="text-purple-600 w-8 h-8" /> },
-            { title: "Skill Tests", desc: "Take assessments to showcase your abilities to employers.", icon: <FaGraduationCap className="text-purple-600 w-8 h-8" /> },
-            { title: "HR Tools", desc: "Post jobs, review candidates, and schedule interviews.", icon: <FaHandshake className="text-purple-600 w-8 h-8" /> }
-          ].map((service, idx) => (
+        <h2 className="text-3xl font-bold text-center text-white">Our Services</h2>
+
+        <div className="grid md:grid-cols-3 gap-10 mt-12">
+          {[ 
+            { title: "Job Search", desc: "Find jobs that match your skills.", icon: <FaBriefcase className="text-purple-400 w-10 h-10" /> },
+            { title: "Skill Tests", desc: "Prove your abilities to employers.", icon: <FaGraduationCap className="text-purple-400 w-10 h-10" /> },
+            { title: "HR Tools", desc: "Manage hiring, candidates & interviews.", icon: <FaHandshake className="text-purple-400 w-10 h-10" /> }
+          ].map((s, i) => (
             <motion.div
-              key={idx}
-              className="bg-white shadow-md rounded-lg p-6 hover:shadow-lg transition flex flex-col items-center text-center"
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ delay: idx * 0.2 }}
-              viewport={{ once: true }}
+              key={i}
+              className={`${cardGlass} p-8 rounded-2xl flex flex-col items-center text-center hover:scale-105 transition-transform`}
             >
-              {service.icon}
-              <h3 className="text-xl font-semibold text-gray-800 mt-4">{service.title}</h3>
-              <p className="text-gray-500 mt-2">{service.desc}</p>
+              {s.icon}
+              <h3 className="text-xl text-white font-semibold mt-4">{s.title}</h3>
+              <p className="text-gray-400 mt-2">{s.desc}</p>
             </motion.div>
           ))}
         </div>
       </motion.section>
 
-      {/* Student Section  */}
+
+      {/* STUDENTS SECTION */}
       <motion.section
-        className="bg-white px-8 lg:px-20 py-16"
+        className="px-8 lg:px-20 py-20"
         initial={{ opacity: 0, y: 50 }}
         whileInView={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6 }}
-        viewport={{ once: true }}
       >
-        <h2 className="text-3xl font-bold text-center text-gray-900">For Students</h2>
+        <h2 className="text-3xl font-bold text-center text-white">For Students</h2>
 
         <div className="grid md:grid-cols-2 gap-12 mt-12 items-center">
           <motion.img
-            src="https://images.unsplash.com/photo-1522202176988-66273c2fd55f?auto=format&fit=crop&w=800&q=80"
-            alt="Student preparing"
-            className="rounded-lg shadow-md"
-            initial={{ opacity: 0, x: -50 }}
-            whileInView={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.6 }}
+            src="https://images.unsplash.com/photo-1522202176988-66273c2fd55f"
+            className="rounded-2xl shadow-2xl border border-white/10"
           />
           <div>
-            <h3 className="text-2xl font-semibold text-gray-800">Empowering Your Career</h3>
-            <p className="text-gray-500 mt-4">
-              Students can explore thousands of job listings, take industry-relevant skill tests, and receive guidance on career paths. 
-              Build your portfolio and connect with top companies.
+            <h3 className="text-2xl text-white font-semibold">Empowering Your Career</h3>
+            <p className="text-gray-400 mt-4 text-lg">
+              Discover job opportunities, take skill assessments, and build a professional profile for recruiters.
             </p>
-            <button className="mt-6 bg-purple-600 text-white px-6 py-3 rounded-lg hover:bg-purple-700 transition">
+            <button className="mt-6 bg-purple-600 hover:bg-purple-700 px-8 py-3 rounded-xl font-semibold shadow-lg">
               Get Started
             </button>
           </div>
         </div>
       </motion.section>
 
-      {/* Company Section  */}
+
+      {/* COMPANIES */}
       <motion.section
-        className="bg-gray-50 px-8 lg:px-20 py-16"
+        className="px-8 lg:px-20 py-20 bg-[#111827]"
         initial={{ opacity: 0, y: 50 }}
         whileInView={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6 }}
-        viewport={{ once: true }}
       >
-        <h2 className="text-3xl font-bold text-center text-gray-900">For Companies</h2>
+        <h2 className="text-3xl font-bold text-center text-white">For Companies</h2>
 
         <div className="grid md:grid-cols-2 gap-12 mt-12 items-center">
           <div>
-            <h3 className="text-2xl font-semibold text-gray-800">Hire The Best Talent</h3>
-            <p className="text-gray-500 mt-4">
-              Companies can post job openings, access skill-tested candidates, and manage hiring with powerful tools. 
-              Save time and hire the right person faster.
+            <h3 className="text-2xl text-white font-semibold">Hire The Best Talent</h3>
+            <p className="text-gray-400 mt-4 text-lg">
+              Post jobs, evaluate candidates through tests, and manage hiring easily.
             </p>
-            <button className="mt-6 border border-purple-600 text-purple-600 px-6 py-3 rounded-lg hover:bg-purple-50 transition">
+            <button className="mt-6 border border-purple-400 text-purple-300 px-8 py-3 rounded-xl hover:bg-purple-300 hover:text-[#111827] transition font-semibold">
               Post a Job
             </button>
           </div>
+
           <motion.img
-            src="https://images.unsplash.com/photo-1598257006626-48b0c252070d?auto=format&fit=crop&w=800&q=80"
-            alt="Hiring team discussion"
-            className="rounded-lg shadow-md"
-            initial={{ opacity: 0, x: 50 }}
-            whileInView={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.6 }}
+            src="https://images.unsplash.com/photo-1598257006626-48b0c252070d"
+            className="rounded-2xl shadow-2xl border border-white/10"
           />
         </div>
       </motion.section>
 
-      {/* Call to Action  */}
+
+      {/* CALL TO ACTION */}
       <motion.section
-        className="bg-purple-600 text-white text-center px-8 lg:px-20 py-16"
+        className="bg-gradient-to-r from-purple-700 to-purple-500 text-white text-center px-8 lg:px-20 py-20"
         initial={{ opacity: 0, y: 50 }}
         whileInView={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6 }}
-        viewport={{ once: true }}
       >
         <h2 className="text-3xl font-bold">Ready to Start Your Journey?</h2>
-        <p className="mt-4 text-lg max-w-2xl mx-auto">
-          Whether you are a student looking for opportunities or a company searching for top talent, WorkFinder is your trusted partner.
+        <p className="mt-4 text-lg max-w-xl mx-auto text-purple-100">
+          Whether you are a student or a company, WorkFinder helps you grow faster.
         </p>
+
         <div className="flex flex-col md:flex-row justify-center gap-4 mt-6">
-          <button className="bg-white text-purple-600 font-semibold px-8 py-3 rounded-lg hover:bg-gray-100 transition">
+          <button className="bg-white text-purple-700 font-semibold px-10 py-3 rounded-xl hover:bg-gray-200 transition shadow-lg">
             Join as Student
           </button>
-          <button className="bg-transparent border border-white px-8 py-3 rounded-lg hover:bg-white hover:text-purple-600 transition">
+          <button className="border border-white px-10 py-3 rounded-xl hover:bg-white hover:text-purple-700 transition font-semibold shadow-lg">
             Join as Company
           </button>
         </div>
       </motion.section>
+
     </div>
   );
 };
