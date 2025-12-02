@@ -82,6 +82,11 @@ async def score_resume(file: UploadFile = File(...), job_description: str = Form
     result = calculate_resume_score(text, job_description)
     return result
 
+@app.get("/")
+def home():
+    return {"message": "AI Resume Scoring API is running successfully!"}
+
+
 # ------------------------ RUN SERVER ------------------------
 if __name__ == "__main__":
     uvicorn.run("app:app", host="0.0.0.0", port=8000)
