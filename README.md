@@ -1,4 +1,4 @@
-````markdown
+
 # Hiring Project
 
 https://github.com/gaurav-opensource/Hiring-Platefrom/assets/banner-video.png
