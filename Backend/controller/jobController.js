@@ -7,6 +7,10 @@ require("dotenv").config();
 const axios = require("axios");
 const FormData = require("form-data");
 
+const JUDGE0_URL = process.env.JUDGE0_URL;
+const JUDGE0_KEY = process.env.JUDGE0_KEY;
+const JUDGE0_HOST = process.env.JUDGE0_HOST;
+
 
 
 //student apply for job
@@ -355,12 +359,7 @@ const LANGUAGE_MAP = {
   java: 62,
 };
 
-
-const JUDGE0_URL = "https://judge0-ce.p.rapidapi.com";
-const JUDGE0_KEY = "1b7e563300msh3a6a8fa89c5812bp17fcd1jsn302890a8dc8a";
-const JUDGE0_HOST = "judge0-ce.p.rapidapi.com";
-
-
+// Evaluation of test after student complete test
 const evaluateJob = async (req, res) => {
   const { jobId } = req.params;
 
@@ -390,6 +389,7 @@ const evaluateJob = async (req, res) => {
 
         for (let test of question.testCases) {
           totalTestCases++;
+
           queue.add(async () => {
             try {
               const response = await axios.post(
@@ -445,84 +445,6 @@ const evaluateJob = async (req, res) => {
   }
 };
 
-const sendEmailoftest = async(req,res) =>{
-  
-
-}
-const enableTestSection = async (req, res) => {
-  try {
-    const { jobId } = req.params;
-
-    const job = await Job.findByIdAndUpdate(
-      jobId,
-      { $set: { testSection: true } },
-      { new: true }
-    );
-
-    if (!job) {
-      return res.status(404).json({ message: "Job not found" });
-    }
-
-    return res.json({
-      message: "Test section enabled successfully",
-      job,
-    });
-  } catch (error) {
-    console.error("Error in enableTestSection:", error.message);
-    return res.status(500).json({
-      message: "Server error",
-      error: error.message,
-    });
-  }
-};
-
-const sendTestEmail = async (req, res) => {
-  try {
-    const { jobId } = req.params;
-    const { description, startTime, endTime } = req.body;
-
-    const job = await Job.findById(jobId);
-    if (!job) {
-      return res.status(404).json({ message: "Job not found" });
-    }
-
-    const applicants = await ApplicationProgress.find({ jobId, currentStage: "test" })
-      .populate("userId");
-
-    if (!applicants || applicants.length === 0) {
-      return res.status(404).json({ message: "No applicants found in test stage" });
-    }
-
-    for (const applicant of applicants) {
-      if (!applicant.userId) continue;
-
-      const testLink = `${process.env.APP_BASE_URL}/test/${applicant.userId._id}/${job._id}?start=${encodeURIComponent(
-        startTime
-      )}&end=${encodeURIComponent(endTime)}`;
-
-      await sendEmail({
-        to: applicant.userId.email,
-        subject: `Coding Test Invitation for ${job.title}`,
-        html: `
-          <p>Dear <strong>${applicant.userId.name}</strong>,</p>
-          <p>${description}</p>
-          <p><strong>Test Window:</strong> 
-             ${new Date(startTime).toLocaleString()} - 
-             ${new Date(endTime).toLocaleString()}</p>
-          <p><a href="${testLink}">Start Test</a></p>
-        `,
-      });
-    }
-
-    return res.json({ message: "Test emails sent successfully!" });
-
-  } catch (error) {
-    console.error("Error sending test emails:", error);
-    return res.status(500).json({ message: "Server error", error: error.message });
-  }
-};
-
-
 
 module.exports = {
   applyToJob,
@@ -536,6 +458,4 @@ module.exports = {
   stageChange,
   stageChangeInStudent,
   enableTestSection,
-  sendEmailoftest,
-  sendTestEmail
 }

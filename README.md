@@ -144,6 +144,11 @@ A dedicated **FastAPI microservice** evaluates how well a candidate’s resume m
 
 ---
 
+▶ **Watch Full Project Demo:**  
+https://www.canva.com/design/DAG6tBW2sls/zM5cWMKwrZU0KHZ0juv5vA/watch?utm_content=DAG6tBW2sls&utm_campaign=designshare&utm_medium=link2&utm_source=uniquelinks&utlId=h75f65b6a91
+
+---
+
 ## Getting Started
 
 ### Prerequisites
