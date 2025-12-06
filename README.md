@@ -5,7 +5,8 @@ https://github.com/gaurav-opensource/Hiring-Platefrom/assets/banner-video.png
 
 ## 🎥 Project Demo (Click to Watch)
 
-[![Watch Video](https://img.youtube.com/vi/1x4h3nM8Ujs/maxresdefault.jpg)](https://www.canva.com/design/DAG6tBW2sls/zM5cWMKwrZU0KHZ0juv5vA/watch)
+[![Watch Video](./frontend/src/assets/home_page.png)](https://www.canva.com/design/DAG6tBW2sls/zM5cWMKwrZU0KHZ0juv5vA/watch)
+
 
 *(Thumbnail opens the full project video demo)*
 
